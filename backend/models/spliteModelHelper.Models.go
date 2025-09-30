@@ -12,12 +12,13 @@ const BILL_STATUS_ACTIVE = 0
 type Split struct {
 	BillID       string            `json:"billId"`
 	Items        []Item            `json:"items"`
+	TotalAmount  float64           `json:"total"`
 	Participants map[string]string `json:"participants"`
 	Status       int               `json:"status"`
 	Location     string            `json:"location"`
-	Date         time.Time         `json:"date"`
-	CreatedAt    time.Time         `json:"createdAt"`
-	LastUpdated  time.Time         `json:"lastUpdated"`
+	Date         SplitDate         `json:"date"`
+	CreatedAt    SplitDate         `json:"createdAt"`
+	LastUpdated  SplitDate         `json:"lastUpdated"`
 }
 
 type Item struct {
@@ -28,7 +29,7 @@ type Item struct {
 }
 
 type ISplitModifier interface {
-	AddBillIfNotExists(split *Split) (string, error)
+	AddBillIfNotExists(split *Split) error
 	DeleteBillIfExists(splitId string) error
 
 	// admin actions
@@ -43,39 +44,11 @@ type ISplitModifier interface {
 
 type ISplitModelHelper interface {
 	Init(db IDatabase, logger logger.ILogger)
+	CreateNewSplit() *Split
+	CreateSplitDate(time.Time) SplitDate
 	ISplitModifier
 }
 
-/*
-
-JSON schema to be followed
-
-{
-  "billId": "unique-bill-link-id",
-  "items": [
-    {
-      "id": "item1",
-      "name": "Pizza",
-      "price": 25.00,
-      "takers": ["userA", "userB"]
-    },
-    {
-      "id": "item2",
-      "name": "Coke",
-      "price": 3.00,
-      "takers": ["userC"]
-    }
-  ],
-  "participants": {
-    "userA": "Alice",
-    "userB": "Bob",
-    "userC": "Charlie",
-  },
-  "status": "active",
-  "location": "place name",
-  "date": "date",
-  "createdAt": "...",
-  "lastUpdated": "..."
+type SplitDate struct {
+	string string
 }
-
-*/

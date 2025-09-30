@@ -1,0 +1,7 @@
+*.exe
+*.excalidraw
+*.txt
+*.jpg
+
+backend/.env
+.vscode/launch.json

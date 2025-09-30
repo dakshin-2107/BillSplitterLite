@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/handlers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
+	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ func test() IRouteCreator {
 type IRouteCreator interface {
 	GetHandlerCount() int
 	CreateRoute(handlersHolder gin.IRoutes, handler handlers.IRouteHandlerBase)
-	Init(logger logger.ILogger, r *gin.Engine, modelHelper models.ISplitModelHelper, handlers ...handlers.IRouteHandlerBase)
+	Init(logger logger.ILogger, r *gin.Engine, modelHelper models.ISplitModelHelper, sessionManager managers.ISessionManager, handlers ...handlers.IRouteHandlerBase)
 }
 
 type RouteCreator struct {
@@ -26,7 +27,8 @@ type RouteCreator struct {
 	routerGroupDict map[string]*gin.RouterGroup
 }
 
-func (routeCreator *RouteCreator) Init(logger logger.ILogger, r *gin.Engine, modelHelper models.ISplitModelHelper, handlers ...handlers.IRouteHandlerBase) {
+func (routeCreator *RouteCreator) Init(logger logger.ILogger, r *gin.Engine, modelHelper models.ISplitModelHelper, sessionManager managers.ISessionManager, handlers ...handlers.IRouteHandlerBase) {
+
 	routeCreator.logger = logger
 	routeCreator.ginEngine = r
 	routeCreator.modelHelper = modelHelper
@@ -34,7 +36,7 @@ func (routeCreator *RouteCreator) Init(logger logger.ILogger, r *gin.Engine, mod
 
 	// middleware handlers
 	for _, handler := range handlers {
-		handler.Init(logger, modelHelper)
+		handler.Init(logger, modelHelper, sessionManager)
 		if handler.Method() == "" {
 			logger.DebugLog("Creating middleware group with pattern: " + handler.Pattern())
 			routeCreator.routerGroupDict[handler.Pattern()] = r.Group(handler.Pattern(), handler.Handle)

@@ -2,13 +2,16 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/handlers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
+	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/models"
 	"github.com/dakshin-2107/BillSplitterLite/backend/routes"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 func CreateGinEngine(logger logger.ILogger) *gin.Engine {
@@ -24,10 +27,10 @@ func NewLogger() logger.ILogger {
 }
 
 func NewDatabase(logger logger.ILogger) (models.IDatabase, error) {
-	mongo := new(models.RedisDatabaseConnection)
-	err := mongo.Init(logger)
+	redisDB := new(models.RedisDatabaseConnection)
+	err := redisDB.Init(logger)
 	logger.DebugLog("Instantiated database connection")
-	return mongo, err
+	return redisDB, err
 }
 
 func NewModelHelper(db models.IDatabase, logger logger.ILogger) (models.ISplitModelHelper, error) {
@@ -51,16 +54,39 @@ func NewHandler[T any]() handlers.IRouteHandlerBase {
 	return handler
 }
 
-func NewRouteCreater(logger logger.ILogger, modelHelper models.ISplitModelHelper, r *gin.Engine, routesList ...handlers.IRouteHandlerBase) routes.IRouteCreator {
+func NewRouteCreater(logger logger.ILogger, modelHelper models.ISplitModelHelper, r *gin.Engine, sessionManager managers.ISessionManager, routesList ...handlers.IRouteHandlerBase) routes.IRouteCreator {
 	rc := new(routes.RouteCreator)
 	logger.DebugLog("Instantiated route creator")
 
-	rc.Init(logger, r, modelHelper, routesList...)
+	rc.Init(logger, r, modelHelper, sessionManager, routesList...)
 	logger.DebugLog(fmt.Sprintf("Route creator created %d routes", rc.GetHandlerCount()))
 	return rc
 }
 
-func StartApp(r *gin.Engine, logger logger.ILogger, rc routes.IRouteCreator) {
+func NewSessionManager(logger logger.ILogger, connUpgrader *managers.ConnectionUpgrader) managers.ISessionManager {
+	sessionMananger := new(managers.SessionManager)
+	sessionMananger.Init(logger, connUpgrader)
+	return sessionMananger
+}
+
+func NewConnUpgrader() *managers.ConnectionUpgrader {
+	return &managers.ConnectionUpgrader{
+		Upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
+	}
+}
+
+func StartApp(r *gin.Engine, logger logger.ILogger, rc routes.IRouteCreator, db models.IDatabase) {
 	logger.DebugLog("Starting the app")
+
+	if !db.IsConnected() {
+		panic("could not connect to redis")
+	}
+
 	r.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }

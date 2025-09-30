@@ -20,7 +20,7 @@ func CreateHandlerConsumer(constructor any, returnType any) fx.Option {
 		fx.Annotate(
 			constructor,
 			fx.As(returnType),
-			fx.ParamTags("", "", "", `group:"handler"`),
+			fx.ParamTags("", "", "", "", `group:"handler"`),
 		),
 	)
 }

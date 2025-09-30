@@ -2,15 +2,22 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
+	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
+
 	"github.com/go-redis/redis/v8"
 )
 
+const ACTIONS_QUEUE_KEY = "ActionsQueue"
+
 type RedisDatabaseConnection struct {
 	DatabaseProvider
+	ctx         context.Context
 	redisClient *redis.Client
 	logger      logger.ILogger
 }
@@ -21,12 +28,14 @@ func test() IDatabase {
 
 func (r *RedisDatabaseConnection) Init(logger logger.ILogger) error {
 	r.logger = logger
+	r.Uri = os.Getenv("REDIS_URI")
+	r.ConnectToDatabase()
 	return nil
 }
 
 func (r *RedisDatabaseConnection) ConnectToDatabase() error {
 
-	ctx := context.Background()
+	r.ctx = context.Background()
 
 	r.redisClient = redis.NewClient(&redis.Options{
 		Addr:        r.Uri,
@@ -36,10 +45,11 @@ func (r *RedisDatabaseConnection) ConnectToDatabase() error {
 		DialTimeout: 5 * time.Second,
 	})
 
-	statusCmd := r.redisClient.Ping(ctx)
-	if statusCmd.Err() != nil {
+	statusCmd := r.redisClient.Ping(r.ctx)
+	if err := statusCmd.Err(); err != nil {
 		r.IsDBConnected = false
-		r.logger.InfoLog(fmt.Sprintf("Could not connect to Redis: %v", statusCmd.Err()))
+		r.logger.InfoLog(fmt.Sprintf("Could not connect to Redis: %v", err))
+		return err
 	}
 
 	r.IsDBConnected = true
@@ -62,8 +72,21 @@ func (r *RedisDatabaseConnection) DisconnectFromDatabase() error {
 	return nil
 }
 
-func (r *RedisDatabaseConnection) AddBillIfNotExists(split *Split) (string, error) {
-	return "", nil
+func (r *RedisDatabaseConnection) AddBillIfNotExists(split *Split) error {
+
+	data, err := json.Marshal(split)
+	if err != nil {
+		r.logger.InfoLog(fmt.Sprintf("Error marshalling split: %v", err))
+		return err
+	}
+
+	err = r.redisClient.Do(r.ctx, "JSON.SET", split.BillID, "$", data).Err()
+	if err != nil {
+		r.logger.InfoLog(fmt.Sprintf("Error setting split in Redis: %v", err))
+		return err
+	}
+
+	return nil
 }
 
 func (r *RedisDatabaseConnection) DeleteBillIfExists(splitId string) error {
@@ -90,6 +113,14 @@ func (r *RedisDatabaseConnection) AddItemTaker(splitId string, itemId string, ta
 
 func (r *RedisDatabaseConnection) DeleteItemTaker(splitId string, itemId string, takerId string) error {
 	return nil
+}
+
+func (r *RedisDatabaseConnection) QueueAction(action managers.IAction) error {
+	return nil
+}
+
+func (r RedisDatabaseConnection) DequeueAction() (managers.IAction, error) {
+	return &managers.Action{}, nil
 }
 
 /*
