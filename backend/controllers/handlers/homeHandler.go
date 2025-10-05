@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
-	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
-	"github.com/dakshin-2107/BillSplitterLite/backend/models"
+	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -14,19 +12,17 @@ import (
 /*
 Purpose :
 - receiving the bill image and processing it AI.
-- use the response from the MCP agent, add the split in the database
+- use the response from the LLM, add the split in the database
 - return a (session ID, user ID) as part of a cookie and redirect the user to the session created
 */
 
-type HomeHandler struct{ RouteHandlerBase }
+type HomeHandler struct{ common.RouteHandlerBase }
 
-func (h *HomeHandler) Init(logger logger.ILogger, modelHelper models.ISplitModelHelper, sessionManger managers.ISessionManager) {
-	h.RouteHandlerBase.BaseInit(logger, modelHelper, sessionManger)
-
-	h.pattern = `/home`
-	h.method = "POST"
-	h.group = ""
-	h.handler = h.Handle
+func (h *HomeHandler) Init() {
+	h.Pattern = `/home`
+	h.Method = "POST"
+	h.Group = ""
+	h.Handler = h.Handle
 }
 
 func (h *HomeHandler) Handle(ctx *gin.Context) {
@@ -39,21 +35,23 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 
 	if imageErr == nil {
 
-		newSplit := h.modelHelper.CreateNewSplit()
-		newSplit.CreatedAt = h.modelHelper.CreateSplitDate(time.Now())
-		newSplit.LastUpdated = h.modelHelper.CreateSplitDate(time.Now())
-		h.ParseItemsFromImage(image, newSplit)
-		//h.ParseItemsFromImageDummy(image, newSplit)
+		newSplit := h.ModelHelper.CreateNewSplit()
+		newSplit.CreatedAt = common.CreateSplitDate(time.Now())
+		newSplit.LastUpdated = common.CreateSplitDate(time.Now())
+		//h.ParseItemsFromImage(image, newSplit)
+		h.ParseItemsFromImageDummy(image, newSplit)
 
 		h.CreateParticipantsMap(names, newSplit)
 		newSplit.BillID = GenerateNewBillId(place, splitDate)
-		err := h.modelHelper.AddBillIfNotExists(newSplit)
+		err := h.ModelHelper.AddBillIfNotExists(newSplit)
 		if err == nil {
 
 			ctx.SetCookie("BillsessionID", newSplit.BillID, 3600, "/", "", true, true)
+			ctx.SetCookie("UserID", "admin_boi", 3600, "/", "", true, true)
 			ctx.JSON(200, gin.H{
 				"success": true,
 				"message": "Session has been created",
+				"bill":    newSplit,
 			})
 			return
 		}
@@ -65,7 +63,7 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 	})
 }
 
-func (h *HomeHandler) CreateParticipantsMap(names []string, split *models.Split) {
+func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split) {
 
 	currPersonCount := 1
 
@@ -92,6 +90,6 @@ func GenerateNewBillId(place string, splitDate time.Time) string {
 	return uuid.New().String()
 }
 
-func testHome() IRouteHandlerBase {
+func testHome() common.IRouteHandlerBase {
 	return &HomeHandler{}
 }

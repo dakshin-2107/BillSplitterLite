@@ -1,8 +1,7 @@
-package models
+package common
 
 import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
-	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
 )
 
 type IDatabase interface {
@@ -11,7 +10,7 @@ type IDatabase interface {
 	ConnectToDatabase() error
 	DisconnectFromDatabase() error
 	ISplitModifier
-	managers.IActionManager
+	//managers.IActionManager
 }
 
 type DatabaseProvider struct {

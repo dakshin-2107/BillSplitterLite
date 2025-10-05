@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dakshin-2107/BillSplitterLite/backend/handlers"
+	"github.com/dakshin-2107/BillSplitterLite/backend/common"
+	"github.com/dakshin-2107/BillSplitterLite/backend/controllers/managers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
-	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
-	"github.com/dakshin-2107/BillSplitterLite/backend/models"
+	"github.com/dakshin-2107/BillSplitterLite/backend/models/database"
+	"github.com/dakshin-2107/BillSplitterLite/backend/models/modelHelper"
 	"github.com/dakshin-2107/BillSplitterLite/backend/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -26,27 +27,27 @@ func NewLogger() logger.ILogger {
 	return logger
 }
 
-func NewDatabase(logger logger.ILogger) (models.IDatabase, error) {
-	redisDB := new(models.RedisDatabaseConnection)
+func NewDatabase(logger logger.ILogger) (common.IDatabase, error) {
+	redisDB := new(database.RedisDatabaseConnection)
 	err := redisDB.Init(logger)
 	logger.DebugLog("Instantiated database connection")
 	return redisDB, err
 }
 
-func NewModelHelper(db models.IDatabase, logger logger.ILogger) (models.ISplitModelHelper, error) {
-	helper := new(models.SplitModelHelper)
+func NewModelHelper(db common.IDatabase, logger logger.ILogger) (common.ISplitModelHelper, error) {
+	helper := new(modelHelper.SplitModelHelper)
 	helper.Init(db, logger)
 	logger.DebugLog("Instantiated model helper")
 	return helper, nil
 }
 
-func NewHandler[T any]() handlers.IRouteHandlerBase {
+func NewHandler[T any]() common.IRouteHandlerBase {
 
 	// So that I dont waste time again.
 	// The below code does not work because Go does not allow direct type assertions on generic types as shown below.
 	// handler, ok := new(T).(IRouteHandlerBase)
 
-	handler, ok := any(new(T)).(handlers.IRouteHandlerBase)
+	handler, ok := any(new(T)).(common.IRouteHandlerBase)
 	if !ok {
 		panic("T must implement IRouteHandlerBase")
 	}
@@ -54,7 +55,7 @@ func NewHandler[T any]() handlers.IRouteHandlerBase {
 	return handler
 }
 
-func NewRouteCreater(logger logger.ILogger, modelHelper models.ISplitModelHelper, r *gin.Engine, sessionManager managers.ISessionManager, routesList ...handlers.IRouteHandlerBase) routes.IRouteCreator {
+func NewRouteCreater(logger logger.ILogger, modelHelper common.ISplitModelHelper, r *gin.Engine, sessionManager common.ISessionManager, routesList ...common.IRouteHandlerBase) routes.IRouteCreator {
 	rc := new(routes.RouteCreator)
 	logger.DebugLog("Instantiated route creator")
 
@@ -63,25 +64,23 @@ func NewRouteCreater(logger logger.ILogger, modelHelper models.ISplitModelHelper
 	return rc
 }
 
-func NewSessionManager(logger logger.ILogger, connUpgrader *managers.ConnectionUpgrader) managers.ISessionManager {
+func NewSessionManager(logger logger.ILogger, connUpgrader *websocket.Upgrader, modelHelper common.ISplitModelHelper) common.ISessionManager {
 	sessionMananger := new(managers.SessionManager)
-	sessionMananger.Init(logger, connUpgrader)
+	sessionMananger.Init(logger, connUpgrader, modelHelper)
 	return sessionMananger
 }
 
-func NewConnUpgrader() *managers.ConnectionUpgrader {
-	return &managers.ConnectionUpgrader{
-		Upgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
+func NewConnUpgrader() *websocket.Upgrader {
+	return &websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
 		},
 	}
 }
 
-func StartApp(r *gin.Engine, logger logger.ILogger, rc routes.IRouteCreator, db models.IDatabase) {
+func StartApp(r *gin.Engine, logger logger.ILogger, rc routes.IRouteCreator, db common.IDatabase) {
 	logger.DebugLog("Starting the app")
 
 	if !db.IsConnected() {

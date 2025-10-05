@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/dakshin-2107/BillSplitterLite/backend/handlers"
+	"github.com/dakshin-2107/BillSplitterLite/backend/common"
+	"github.com/dakshin-2107/BillSplitterLite/backend/controllers/handlers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
-	"github.com/dakshin-2107/BillSplitterLite/backend/managers"
-	"github.com/dakshin-2107/BillSplitterLite/backend/models"
 	"github.com/dakshin-2107/BillSplitterLite/backend/routes"
 	"github.com/dakshin-2107/BillSplitterLite/backend/utils"
 	"github.com/joho/godotenv"
@@ -22,16 +21,21 @@ func main() {
 	}
 
 	fx.New(
+		// concrete types
 		utils.CreateJustProvider(utils.CreateGinEngine),
 		utils.CreateJustProvider(utils.NewConnUpgrader),
+
+		// interface types
 		utils.CreateAnnotatedProvider(utils.NewLogger, new(logger.ILogger)),
-		utils.CreateAnnotatedProvider(utils.NewDatabase, new(models.IDatabase)),
-		utils.CreateAnnotatedProvider(utils.NewModelHelper, new(models.ISplitModelHelper)),
-		utils.CreateAnnotatedProvider(utils.NewSessionManager, new(managers.ISessionManager)),
+		utils.CreateAnnotatedProvider(utils.NewDatabase, new(common.IDatabase)),
+		utils.CreateAnnotatedProvider(utils.NewModelHelper, new(common.ISplitModelHelper)),
+		utils.CreateAnnotatedProvider(utils.NewSessionManager, new(common.ISessionManager)),
 
 		// Handlers
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.PingHandler]),
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.HomeHandler]),
+		utils.CreateHandlerProvider(utils.NewHandler[handlers.BillHandler]),
+		utils.CreateHandlerProvider(utils.NewHandler[handlers.SplitActionHandler]),
 
 		// route creator
 		utils.CreateHandlerConsumer(utils.NewRouteCreater, new(routes.IRouteCreator)),
