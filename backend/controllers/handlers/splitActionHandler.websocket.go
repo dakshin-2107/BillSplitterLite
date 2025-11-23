@@ -11,8 +11,8 @@ import (
 /*
 Purpose :
   - use the bill id and user id from a cookie
-  - upgrade the connection after getting those details
-  - every action received from the front end must be validated, applied and then acknowledged back so that the frontend can be udpated
+  - use long polling to get updates from the user on need by basis
+  - use the session manager to execute actions and then publish the confirmed updates to the user
 */
 
 type SplitActionWsHandler struct{ common.SessionRouteHandlerBase }

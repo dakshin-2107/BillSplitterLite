@@ -35,7 +35,7 @@ type Action struct {
 	ActionType int     `json:"actionType"`
 	SplitId    string  `json:"splitId"`
 	ItemId     string  `json:"itemId"`
-	ItemName   string  `json:"itemName"`
+	ItemName   string  `json:"itemName"` // can be used for taker name
 	TakerId    string  `json:"takerId"`
 	Price      float32 `json:"price"`
 }

@@ -1,4 +1,4 @@
-module github.com/dakshin-2107/BillSplitterLite
+module github.com/dakshin-2107/BillSplitterLite/backend
 
 go 1.24.2
 

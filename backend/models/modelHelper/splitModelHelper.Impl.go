@@ -38,21 +38,33 @@ func (sp *SplitModelHelper) UpdateBillMetaData(splitId string, newSplit common.S
 
 // Bill item methods
 func (sp *SplitModelHelper) AddBillItem(splitId string, item common.Item) error {
+	sp.logger.DebugLog(fmt.Sprintf("Adding item(ID : %v) for split(ID : %v)", item.Id, splitId))
 	return sp.db.AddBillItem(splitId, item)
 }
 
 func (sp *SplitModelHelper) DeleteBillItem(splitId string, itemId string) error {
+	sp.logger.DebugLog(fmt.Sprintf("Deleting item(ID : %v) for split(ID : %v)", itemId, splitId))
 	return sp.db.DeleteBillItem(splitId, itemId)
 }
 
-// Taker methods
 func (sp *SplitModelHelper) AddItemTaker(splitId string, itemId string, takerId string) error {
-	sp.logger.DebugLog(fmt.Sprintf("Adding item taker %v for item %v for split ID %v", takerId, itemId, splitId))
+	sp.logger.DebugLog(fmt.Sprintf("Adding item taker(ID : %v) for item(ID : %v) for split(ID : %v)", takerId, itemId, splitId))
 	return sp.db.AddItemTaker(splitId, itemId, takerId)
 }
 
 func (sp *SplitModelHelper) DeleteItemTaker(splitId string, itemId string, takerId string) error {
+	sp.logger.DebugLog(fmt.Sprintf("Removing item taker(ID : %v) for item(ID: %v) for split(ID : %v)", takerId, itemId, splitId))
 	return sp.db.DeleteItemTaker(splitId, itemId, takerId)
+}
+
+func (sp *SplitModelHelper) AddTakerID(splitId string, takerId string, takerName string) error {
+	sp.logger.DebugLog(fmt.Sprintf("Adding pariticpant(ID: %v) for split(ID: %v)", takerId, splitId))
+	return sp.db.AddTakerID(splitId, takerId, takerName)
+}
+
+func (sp *SplitModelHelper) DeleteTakerID(splitId string, takerId string) error {
+	sp.logger.DebugLog(fmt.Sprintf("Removing pariticpant(ID: %v) for for split(ID: %v)", takerId, splitId))
+	return sp.db.DeleteTakerID(splitId, takerId)
 }
 
 func (sp *SplitModelHelper) GetBill(billId string) (*common.Split, error) {

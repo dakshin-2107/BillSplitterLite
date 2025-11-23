@@ -8,12 +8,14 @@ import (
 
 // Action type
 const (
-	HELLO_THERE  = iota
-	ADD_TAKER    // 1
-	REMOVE_TAKER // 2
-	ADD_ITEM     // 3
-	REMOVE_ITEM  // 4
-	EDIT_ITEM    // 5
+	HELLO_THERE       = iota
+	ADD_ITEM_TAKER    // 1
+	REMOVE_ITEM_TAKER // 2
+	ADD_ITEM          // 3
+	REMOVE_ITEM       // 4
+	EDIT_ITEM         // 5
+	ADD_TAKER_ID      // 6
+	REMOVE_TAKER_ID   // 7
 )
 
 type ISessionManager interface {

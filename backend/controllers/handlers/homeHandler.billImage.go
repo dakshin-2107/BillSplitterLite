@@ -21,7 +21,7 @@ const AI_Prompt string = `Using the image provided of a bill and return the foll
             "id": <id in increasing order as a string>,
             "name": <name of the item>
             "price": <price of the item>,
-            "takers": <always an empty list>
+            "takers": <always an empty dictionary>
         },
     }
 }

@@ -27,13 +27,13 @@ func (sp *SplitActionHandler) Init() {
 func (sp *SplitActionHandler) Handle(ctx *gin.Context) {
 
 	// Extract bill id and user id from cookies
-	billID, err := ctx.Cookie("BillsessionId")
+	billID, err := ctx.Cookie("BillsessionID")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing bill_id cookie"})
 		return
 	}
 
-	userID, err := ctx.Cookie("UserId")
+	userID, err := ctx.Cookie("UserID")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing user_id cookie"})
 		return

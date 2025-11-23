@@ -23,10 +23,10 @@ type Split struct {
 }
 
 type Item struct {
-	Id     string   `json:"id"`
-	Name   string   `json:"name"`
-	Price  float32  `json:"price"`
-	Takers []string `json:"takers"`
+	Id     string         `json:"id"`
+	Name   string         `json:"name"`
+	Price  float32        `json:"price"`
+	Takers map[string]int `json:"takers"`
 }
 
 type ISplitModifier interface {
@@ -34,14 +34,15 @@ type ISplitModifier interface {
 	AddBillIfNotExists(split *Split) error
 	DeleteBillIfExists(splitId string) error
 
-	// admin actions
 	UpdateBillMetaData(splitId string, newSplit Split) error
 	AddBillItem(splitId string, item Item) error
 	DeleteBillItem(splitId string, itemId string) error
 
-	// admin + other user actions
 	AddItemTaker(splitId string, itemId string, takerId string) error
 	DeleteItemTaker(splitId string, itemId string, takerId string) error
+
+	AddTakerID(splitId string, takerId string, takerName string) error
+	DeleteTakerID(splitId string, takerId string) error
 }
 
 type ISplitModelHelper interface {

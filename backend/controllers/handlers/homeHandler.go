@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
@@ -38,16 +39,16 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 		newSplit := h.ModelHelper.CreateNewSplit()
 		newSplit.CreatedAt = common.CreateSplitDate(time.Now())
 		newSplit.LastUpdated = common.CreateSplitDate(time.Now())
-		//h.ParseItemsFromImage(image, newSplit)
-		h.ParseItemsFromImageDummy(image, newSplit)
+		h.ParseItemsFromImage(image, newSplit)
+		//h.ParseItemsFromImageDummy(image, newSplit)
 
 		h.CreateParticipantsMap(names, newSplit)
 		newSplit.BillID = GenerateNewBillId(place, splitDate)
 		err := h.ModelHelper.AddBillIfNotExists(newSplit)
 		if err == nil {
 
-			ctx.SetCookie("BillsessionID", newSplit.BillID, 3600, "/", "", true, true)
-			ctx.SetCookie("UserID", "admin_boi", 3600, "/", "", true, true)
+			ctx.SetCookie("BillsessionID", newSplit.BillID, math.MaxInt64, "/", "", true, true) // TODO: Update the cookie age limit
+			ctx.SetCookie("UserID", "admin_boi", math.MaxInt64, "/", "", true, true)
 			ctx.JSON(200, gin.H{
 				"success": true,
 				"message": "Session has been created",
@@ -66,8 +67,6 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split) {
 
 	currPersonCount := 1
-
-	// ensure only unique names
 	filteredNames := make(map[string]string)
 	for _, name := range names {
 		filteredNames[name] = ""
@@ -82,7 +81,7 @@ func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split)
 	split.Participants = participantsMap
 
 	for _, item := range split.Items {
-		item.Takers = make([]string, 0)
+		item.Takers = make(map[string]int, 0)
 	}
 }
 

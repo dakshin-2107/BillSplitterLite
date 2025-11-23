@@ -2,6 +2,7 @@ package managers
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 )
@@ -20,56 +21,49 @@ func (s *SessionManager) PublishAction(action common.IAction) error {
 	return nil
 }
 
-// dummy method
+// dummy method for now
 func (a *Action) ExecuteAction() error {
 	return nil
 }
 
 func (s *SessionManager) ExecuteAction(billID string, userID string, actionData []byte) (common.IAction, error) {
-
-	/*
-	   type Item struct {
-	   	ID     string   `json:"id"`
-	   	Name   string   `json:"name"`
-	   	Price  float64  `json:"price"`
-	   	Takers []string `json:"takers"`
-	   }
-	*/
-
 	var action Action
 	err := json.Unmarshal(actionData, &action)
 	if err == nil {
 
 		switch action.ActionType {
-
-		// id, name and price must be present
 		case common.ADD_ITEM:
 			newItem := common.Item{
 				Id:     action.ItemId,
 				Name:   action.ItemName,
 				Price:  action.Price,
-				Takers: make([]string, 0),
+				Takers: make(map[string]int, 0),
 			}
 
-			s.logger.DebugLog("adding item")
+			s.logger.DebugLog(fmt.Sprintf("adding item(itemID: %v)", action.ItemId))
 			err = s.ModelHelper.AddBillItem(billID, newItem)
-			return &action, err
 
-		// valid id must be present
 		case common.REMOVE_ITEM:
-			s.logger.DebugLog("removing item")
+			s.logger.DebugLog(fmt.Sprintf("removing item(itemID: %v)", action.ItemId))
 			err = s.ModelHelper.DeleteBillItem(billID, action.ItemId)
-			return &action, err
 
-		// valid id and taker name must be present
-		case common.ADD_TAKER:
-			s.logger.DebugLog("adding taker")
+		case common.ADD_ITEM_TAKER:
+			s.logger.DebugLog(fmt.Sprintf("adding taker(takerId: %v) for item(itemId : %v)", action.TakerId, action.ItemId))
+			err = s.ModelHelper.AddItemTaker(billID, action.ItemId, action.TakerId)
 
-		case common.REMOVE_TAKER:
-			s.logger.DebugLog("removing taker")
+		case common.REMOVE_ITEM_TAKER:
+			s.logger.DebugLog(fmt.Sprintf("removing taker(takerId: %v) for item(itemId : %v)", action.TakerId, action.ItemId))
+			err = s.ModelHelper.DeleteItemTaker(billID, action.ItemId, action.TakerId)
+
+		case common.ADD_TAKER_ID:
+			s.logger.DebugLog(fmt.Sprintf("adding taker(takerID: %v) with name : %v", action.TakerId, action.ItemName))
+			err = s.ModelHelper.AddTakerID(billID, action.TakerId, action.ItemName)
+
+		case common.REMOVE_TAKER_ID:
+			s.logger.DebugLog(fmt.Sprintf("removing taker(takerID: %v)", action.TakerId))
+			err = s.ModelHelper.DeleteTakerID(billID, action.TakerId)
 		}
-
 	}
 
-	return nil, err
+	return &action, err
 }
