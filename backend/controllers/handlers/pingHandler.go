@@ -7,7 +7,7 @@ import (
 
 /*
 Purpose :
-- Just to check if the server is running
+- Used only for pinging
 */
 
 type PingHandler struct{ common.RouteHandlerBase }

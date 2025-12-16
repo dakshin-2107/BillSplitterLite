@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"math"
+	"net/http"
 	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
@@ -12,8 +13,8 @@ import (
 
 /*
 Purpose :
-- receiving the bill image and processing it AI.
-- use the response from the LLM, add the split in the database
+- receiving the bill image and processing it using AI.
+- use the response from the LLM, adds the split in the database
 - return a (session ID, user ID) as part of a cookie and redirect the user to the session created
 */
 
@@ -39,29 +40,23 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 		newSplit := h.ModelHelper.CreateNewSplit()
 		newSplit.CreatedAt = common.CreateSplitDate(time.Now())
 		newSplit.LastUpdated = common.CreateSplitDate(time.Now())
-		h.ParseItemsFromImage(image, newSplit)
-		//h.ParseItemsFromImageDummy(image, newSplit)
+		//h.ParseItemsFromImage(image, newSplit)
+		h.ParseItemsFromImageDummy(image, newSplit)
 
 		h.CreateParticipantsMap(names, newSplit)
 		newSplit.BillID = GenerateNewBillId(place, splitDate)
 		err := h.ModelHelper.AddBillIfNotExists(newSplit)
 		if err == nil {
-
-			ctx.SetCookie("BillsessionID", newSplit.BillID, math.MaxInt64, "/", "", true, true) // TODO: Update the cookie age limit
-			ctx.SetCookie("UserID", "admin_boi", math.MaxInt64, "/", "", true, true)
-			ctx.JSON(200, gin.H{
-				"success": true,
-				"message": "Session has been created",
-				"bill":    newSplit,
-			})
+			// TODO: Update the cookie age limit
+			ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.BillID, math.MaxInt64, "/", "", true, true)
+			// TODO: Update the cookie age limit and extract the user name
+			ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", "", true, true)
+			ctx.JSON(http.StatusOK, common.SessionCreationSuccessResponse(*newSplit))
 			return
 		}
 	}
 
-	ctx.JSON(200, gin.H{
-		"success": false,
-		"message": "Parsing was not successful. Session could not be created.",
-	})
+	ctx.JSON(http.StatusOK, common.SessionCreationFailureResponse())
 }
 
 func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split) {

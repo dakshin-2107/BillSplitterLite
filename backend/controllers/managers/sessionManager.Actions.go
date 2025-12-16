@@ -62,6 +62,10 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 		case common.REMOVE_TAKER_ID:
 			s.logger.DebugLog(fmt.Sprintf("removing taker(takerID: %v)", action.TakerId))
 			err = s.ModelHelper.DeleteTakerID(billID, action.TakerId)
+
+		case common.BYE_BYE:
+			s.logger.DebugLog("Bye Bye")
+			return nil, fmt.Errorf("bye bye")
 		}
 	}
 

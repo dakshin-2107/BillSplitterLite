@@ -2,6 +2,7 @@ package managers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
@@ -40,7 +41,13 @@ func (s *SessionManager) CreateNewSession(sessionId string, userID string, ctx *
 			return nil, err
 		}
 
-		s.ConnectionDict[sessionId].AdminConnection = wsConn
+		s.ConnectionDict[sessionId] = &SplitSession{
+			ClientConnections: make(map[string]*websocket.Conn),
+			AdminConnection:   wsConn,
+			ActionCount:       0,
+			IsSessionActive:   true,
+			LastUsed:          time.Now(),
+		}
 		return wsConn, nil
 	}
 }

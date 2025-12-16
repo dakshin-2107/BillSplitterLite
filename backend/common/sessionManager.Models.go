@@ -16,6 +16,7 @@ const (
 	EDIT_ITEM         // 5
 	ADD_TAKER_ID      // 6
 	REMOVE_TAKER_ID   // 7
+	BYE_BYE           // 8
 )
 
 type ISessionManager interface {

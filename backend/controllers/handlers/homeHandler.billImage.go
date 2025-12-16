@@ -11,6 +11,11 @@ import (
 	"google.golang.org/genai"
 )
 
+/*
+ Purpose :
+ - Consists of helper methods that call the LLM and process the bill image
+*/
+
 const AI_Prompt string = `Using the image provided of a bill and return the following details from the bill in the below JSON format. For location get the only name of the place, do not get the entire address. If you cannot find the whole name just provide an empty string.
 {
 	"date": <date on the bill>,
@@ -36,13 +41,13 @@ const SAMPLE_JSON_STRING string = `{
       "id": "1",
       "name": "INDIAN GRILL CKN HALF",
       "price": "200.00",
-      "takers": []
+      "takers":  {}
     },
     "2": {
       "id": "2",
       "name": "BIRIYANI RICE HALF",
       "price": "50.00",
-      "takers": []
+      "takers": {}
     }
   }
 }`
