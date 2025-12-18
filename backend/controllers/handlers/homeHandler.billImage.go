@@ -35,18 +35,18 @@ const AI_Prompt string = `Using the image provided of a bill and return the foll
 const SAMPLE_JSON_STRING string = `{
   "date": "04-Oct-2025",
   "location": "Namma biryani",
-  "total": "250.00",
+  "total": 250.00,
   "items": {
     "1": {
       "id": "1",
       "name": "INDIAN GRILL CKN HALF",
-      "price": "200.00",
+      "price": 200.00,
       "takers":  {}
     },
     "2": {
       "id": "2",
       "name": "BIRIYANI RICE HALF",
-      "price": "50.00",
+      "price": 50.00,
       "takers": {}
     }
   }

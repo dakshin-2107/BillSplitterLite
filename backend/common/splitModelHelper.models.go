@@ -14,7 +14,7 @@ type Split struct {
 	BillID       string            `json:"billId"`
 	Items        map[string]Item   `json:"items"`
 	TotalAmount  float64           `json:"total"`
-	Participants map[string]string `json:"participants"`
+	Participants map[string]string `json:"participants"` // map of takerName -> takerId
 	Status       int               `json:"status"`
 	Location     string            `json:"location"`
 	Date         SplitDate         `json:"date"`

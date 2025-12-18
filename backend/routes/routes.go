@@ -4,6 +4,7 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,6 +28,7 @@ type RouteCreator struct {
 
 func (routeCreator *RouteCreator) Init(logger logger.ILogger, r *gin.Engine, modelHelper common.ISplitModelHelper, sessionManager common.ISessionManager, handlersList ...common.IRouteHandlerBase) {
 
+	r.Use(cors.Default())
 	routeCreator.logger = logger
 	routeCreator.ginEngine = r
 	routeCreator.modelHelper = modelHelper
