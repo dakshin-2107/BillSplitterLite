@@ -44,19 +44,23 @@ func (sp *SplitActionWsHandler) Handle(ctx *gin.Context) {
 	}
 
 	defer conn.Close()
-
+	sp.Logger.DebugLog("Established websocket connection")
 	for {
 
 		_, actionMsg, err := conn.ReadMessage()
 		if err != nil {
+			conn.Close()
 			sp.Logger.DebugLog(fmt.Sprintf("Read error: %v", err))
 			break
 		}
 
 		if action, err := sp.SessionManager.ExecuteAction(billID, userID, actionMsg); err == nil {
+			sp.Logger.DebugLog(fmt.Sprintf("Action executed successfully: %v", action))
 			conn.WriteJSON(common.ActionExecutionSuccessResponse(action))
 		} else {
+			sp.Logger.DebugLog(fmt.Sprintf("Action execution failed: %v", err))
 			conn.WriteJSON(common.ActionExecutionFailureResponse(nil, err))
+			conn.Close()
 			break
 		}
 	}

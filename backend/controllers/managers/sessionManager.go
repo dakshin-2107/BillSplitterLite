@@ -39,6 +39,7 @@ type Action struct {
 	ItemName   string  `json:"itemName"` // can be used for taker name
 	TakerId    string  `json:"takerId"`
 	Price      float32 `json:"price"`
+	Total      float32 `json:"total"`
 }
 
 type SessionManager struct {

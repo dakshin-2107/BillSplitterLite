@@ -33,6 +33,10 @@ func (s *SessionManager) GetSessionConnnections(sessionId string) (map[string]*w
 func (s *SessionManager) CreateNewSession(sessionId string, userID string, ctx *gin.Context) (*websocket.Conn, error) {
 
 	if sess, isPresent := s.ConnectionDict[sessionId]; isPresent {
+		if err := sess.AdminConnection.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(time.Millisecond*100)); err != nil {
+			delete(s.ConnectionDict, sessionId)
+			return s.CreateNewSession(sessionId, userID, ctx)
+		}
 		return sess.AdminConnection, nil
 	} else {
 		wsConn, err := s.Upgrader.Upgrade(ctx.Writer, ctx.Request, nil)

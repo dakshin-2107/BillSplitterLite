@@ -6,17 +6,37 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Action type
+// Action types
 const (
-	HELLO_THERE       = iota
-	ADD_ITEM_TAKER    // 1
-	REMOVE_ITEM_TAKER // 2
-	ADD_ITEM          // 3
-	REMOVE_ITEM       // 4
-	EDIT_ITEM         // 5
-	ADD_TAKER_ID      // 6
-	REMOVE_TAKER_ID   // 7
-	BYE_BYE           // 8
+	// initiate the session
+	HELLO_THERE = iota
+
+	// just to the ping the backend
+	PING
+
+	// sync the current bill state with the client
+	SYNC_BILL_STATE
+
+	// basic taker CRUD operations
+	ADD_TAKER_FOR_ITEM // operation must be idempotent
+	DELETE_TAKER_FOR_ITEM
+
+	// increment/decrement the number of shares for a taker in an item
+	INCREMENT_TAKER_ID
+	DECREMENT_TAKER_ID
+
+	// basic item CRUD operations
+	ADD_NEW_ITEM
+	DELETE_ITEM
+	EDIT_ITEM
+
+	// create/remove the taker only from the item
+	ADD_NEW_TAKER
+	DELETE_TAKER
+	EDIT_TAKER
+
+	// close the session and delete all the data associated with it
+	BYE_BYE
 )
 
 type ISessionManager interface {

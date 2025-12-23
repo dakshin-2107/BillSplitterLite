@@ -1,33 +1,6 @@
 import React, { useState, type FormEvent, type ChangeEvent, useContext, createContext, useMemo } from 'react';
 import './BillForm.css';
-
-interface FormData {
-    place: string;
-    dateTime: string;
-    names: string[];
-    image: File | null;
-}
-
-interface Item {
-    id: string;
-    name: string;
-    price: string;
-    takers: Record<string, unknown>;
-}
-
-interface BillData {
-    date: string;
-    location: string;
-    total: string;
-    items: Record<string, Item>;
-    participants: Record<string, string>;
-}
-
-interface ApiResponse {
-    success: boolean;
-    message: string;
-    bill?: BillData;
-}
+import type { BillData, FormData, ApiResponse } from '../../common/interfaces';
 
 interface BillFormProps {
     onSubmitSuccess: (billData: BillData) => void;
@@ -36,8 +9,6 @@ interface BillFormProps {
 
 
 const BillForm: React.FC<BillFormProps> = ({ onSubmitSuccess, onSubmitError }) => {
-
-
 
     const [formData, setFormData] = useState<FormData>({
         place: '',
@@ -172,7 +143,8 @@ const BillForm: React.FC<BillFormProps> = ({ onSubmitSuccess, onSubmitError }) =
             }
 
             // Get API URL from environment variable
-            const apiUrl = import.meta.env.BACKEND_URL;
+            const apiUrl = import.meta.env.VITE_BACKEND_URL;
+            //const apiUrl = "http://localhost:8080/home";
             if (!apiUrl) {
                 throw new Error('API URL not configured. Please check your .env file.');
             }
@@ -185,6 +157,7 @@ const BillForm: React.FC<BillFormProps> = ({ onSubmitSuccess, onSubmitError }) =
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: submitData,
+                credentials: 'include',
             });
 
             if (!response.ok) {

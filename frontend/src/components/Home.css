@@ -6,6 +6,8 @@
     justify-content: center;
     padding: 0;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 90%;
+    margin: 0 auto;
 }
 
 /* Error Banner */

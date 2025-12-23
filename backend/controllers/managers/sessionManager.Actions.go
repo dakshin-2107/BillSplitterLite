@@ -32,7 +32,19 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 	if err == nil {
 
 		switch action.ActionType {
-		case common.ADD_ITEM:
+
+		case common.HELLO_THERE:
+			s.logger.DebugLog("Hello There")
+
+		case common.PING:
+			s.logger.DebugLog("Ping")
+
+		case common.BYE_BYE:
+			s.logger.DebugLog("Bye Bye")
+			return nil, fmt.Errorf("bye bye")
+
+		// item cases
+		case common.ADD_NEW_ITEM:
 			newItem := common.Item{
 				Id:     action.ItemId,
 				Name:   action.ItemName,
@@ -43,29 +55,39 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 			s.logger.DebugLog(fmt.Sprintf("adding item(itemID: %v)", action.ItemId))
 			err = s.ModelHelper.AddBillItem(billID, newItem)
 
-		case common.REMOVE_ITEM:
+		case common.DELETE_ITEM:
 			s.logger.DebugLog(fmt.Sprintf("removing item(itemID: %v)", action.ItemId))
 			err = s.ModelHelper.DeleteBillItem(billID, action.ItemId)
 
-		case common.ADD_ITEM_TAKER:
+		case common.EDIT_ITEM:
+			s.logger.DebugLog(fmt.Sprintf("editing item(itemID: %v)", action.ItemId))
+
+		// item's taker cases
+		case common.ADD_TAKER_FOR_ITEM:
 			s.logger.DebugLog(fmt.Sprintf("adding taker(takerId: %v) for item(itemId : %v)", action.TakerId, action.ItemId))
 			err = s.ModelHelper.AddItemTaker(billID, action.ItemId, action.TakerId)
 
-		case common.REMOVE_ITEM_TAKER:
+		case common.DELETE_TAKER_FOR_ITEM:
 			s.logger.DebugLog(fmt.Sprintf("removing taker(takerId: %v) for item(itemId : %v)", action.TakerId, action.ItemId))
 			err = s.ModelHelper.DeleteItemTaker(billID, action.ItemId, action.TakerId)
 
-		case common.ADD_TAKER_ID:
+		case common.INCREMENT_TAKER_ID:
+			s.logger.DebugLog(fmt.Sprintf("incrementing taker(takerID: %v)", action.TakerId))
+
+		case common.DECREMENT_TAKER_ID:
+			s.logger.DebugLog(fmt.Sprintf("decrementing taker(takerID: %v)", action.TakerId))
+
+		// taker cases
+		case common.ADD_NEW_TAKER:
 			s.logger.DebugLog(fmt.Sprintf("adding taker(takerID: %v) with name : %v", action.TakerId, action.ItemName))
 			err = s.ModelHelper.AddTakerID(billID, action.TakerId, action.ItemName)
 
-		case common.REMOVE_TAKER_ID:
-			s.logger.DebugLog(fmt.Sprintf("removing taker(takerID: %v)", action.TakerId))
+		case common.DELETE_TAKER:
+			s.logger.DebugLog(fmt.Sprintf("deleting taker(takerID: %v)", action.TakerId))
 			err = s.ModelHelper.DeleteTakerID(billID, action.TakerId)
 
-		case common.BYE_BYE:
-			s.logger.DebugLog("Bye Bye")
-			return nil, fmt.Errorf("bye bye")
+		case common.EDIT_TAKER:
+			s.logger.DebugLog(fmt.Sprintf("editing taker(takerID: %v)", action.TakerId))
 		}
 	}
 

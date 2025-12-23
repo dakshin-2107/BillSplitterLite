@@ -11,13 +11,24 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/models/database"
 	"github.com/dakshin-2107/BillSplitterLite/backend/models/modelHelper"
 	"github.com/dakshin-2107/BillSplitterLite/backend/routes"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 func CreateGinEngine(logger logger.ILogger) *gin.Engine {
 	logger.DebugLog("Instantiated gin engine")
-	return gin.New()
+	r := gin.New()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true, // Required to receive cookies from a CORS request.
+	}))
+
+	return r
 }
 
 func NewLogger() logger.ILogger {

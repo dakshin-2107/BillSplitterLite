@@ -1,0 +1,52 @@
+.takers-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.takers-panel-title {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.takers-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.taker-chip {
+    background: rgba(144, 137, 252, 0.1);
+    border: 1px solid rgba(144, 137, 252, 0.2);
+    color: #c7d2fe;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.taker-chip:hover {
+    background: rgba(144, 137, 252, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(144, 137, 252, 0.1);
+}
+
+.taker-chip:active {
+    transform: translateY(0);
+}
+
+.takers-panel.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.2);
+    transition: all 0.3s ease;
+}

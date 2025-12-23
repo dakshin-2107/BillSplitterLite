@@ -32,6 +32,15 @@ func SessionCreationSuccessResponse(newSplit Split) gin.H {
 	}
 }
 
+// SessionCreationSuccessResponse creates a success response for session creation
+func SessionAlreadyExistsResponse(split Split) gin.H {
+	return gin.H{
+		"success": true,
+		"message": "Session already exists",
+		"bill":    split,
+	}
+}
+
 func SessionCreationFailureResponse() gin.H {
 	return gin.H{
 		"success": false,
