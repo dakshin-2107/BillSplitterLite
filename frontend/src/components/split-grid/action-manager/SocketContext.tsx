@@ -13,9 +13,7 @@ interface SocketContextProps {
 }
 
 export const SocketContextComponent = ({ children, setBillData }: SocketContextProps) => {
-    const socketStatus = useRef<string>('Disconnected');
     const messageListeners = useRef<((msg: ActionResponse) => void)[]>([]);
-    const statusListeners = useRef<((status: string) => void)[]>([]);
     const socketOptions: Options = {
         share: true,
         reconnectInterval: 500,
@@ -35,18 +33,12 @@ export const SocketContextComponent = ({ children, setBillData }: SocketContextP
         },
         onOpen: () => {
             console.log('WebSocket connected');
-            socketStatus.current = "Session connected";
-            statusListeners.current.forEach(listener => listener(socketStatus.current));
         },
         onClose: () => {
             console.log('WebSocket disconnected');
-            socketStatus.current = "Disconnected";
-            statusListeners.current.forEach(listener => listener(socketStatus.current));
         },
         onError: (error) => {
             console.error('WebSocket error:', error);
-            socketStatus.current = "Socket error";
-            statusListeners.current.forEach(listener => listener(socketStatus.current));
         }
     }
 
@@ -56,16 +48,12 @@ export const SocketContextComponent = ({ children, setBillData }: SocketContextP
         messageListeners.current.push(callBack);
     }
 
-    const subscribeToStatus = (callBack: (status: string) => void) => {
-        statusListeners.current.push(callBack);
-    }
-
     const publishAction = (action: IAction) => {
         sendMessage(JSON.stringify(action));
     }
 
     return (
-        <SocketContextProvider.Provider value={{ subscribeToMessages, subscribeToStatus, publishAction, readyState }}>
+        <SocketContextProvider.Provider value={{ subscribeToMessages, publishAction, readyState }}>
             {children}
         </SocketContextProvider.Provider>
     );

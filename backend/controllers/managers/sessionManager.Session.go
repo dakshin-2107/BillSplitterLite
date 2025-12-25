@@ -46,12 +46,17 @@ func (s *SessionManager) CreateNewSession(sessionId string, userID string, ctx *
 		}
 
 		s.ConnectionDict[sessionId] = &SplitSession{
+			SplitID:           sessionId,
 			ClientConnections: make(map[string]*websocket.Conn),
 			AdminConnection:   wsConn,
 			ActionCount:       0,
 			IsSessionActive:   true,
 			LastUsed:          time.Now(),
+			BroadcastChannel:  make(chan Action, 100),
+			TallyChannel:      make(chan Action, 100),
 		}
+
+		s.ConnectionDict[sessionId].ClientConnections[userID] = wsConn
 		return wsConn, nil
 	}
 }

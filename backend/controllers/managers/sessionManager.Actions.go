@@ -7,25 +7,6 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 )
 
-func (s *SessionManager) QueueAction(action common.IAction) error {
-	return nil
-}
-
-func (s *SessionManager) DequeueAction() (common.IAction, error) {
-
-	return nil, nil
-}
-
-func (s *SessionManager) PublishAction(action common.IAction) error {
-
-	return nil
-}
-
-// dummy method for now
-func (a *Action) ExecuteAction() error {
-	return nil
-}
-
 func (s *SessionManager) ExecuteAction(billID string, userID string, actionData []byte) (common.IAction, error) {
 	var action Action
 	err := json.Unmarshal(actionData, &action)

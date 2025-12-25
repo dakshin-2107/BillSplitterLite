@@ -73,16 +73,16 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split) {
 	uniqueNames := make(map[string]bool)
 	for _, name := range names {
-		if strings.TrimSpace(name) != "" {
-			uniqueNames[name] = true
+		trimmed := strings.TrimSpace(name)
+		if trimmed != "" {
+			uniqueNames[trimmed] = true
 		}
 	}
 
 	participantsMap := make(map[string]string)
 	usedIds := make(map[string]bool)
 
-	// Since maps don't guarantee order, and we want deterministic IDs (e.g., first one gets the 3-char prefix),
-	// it might be better to iterate the original 'names' slice but only process unique ones.
+	// Process names in provided order for deterministic IDs
 	for _, name := range names {
 		trimmed := strings.TrimSpace(name)
 		if trimmed == "" || !uniqueNames[trimmed] {
@@ -103,56 +103,41 @@ func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split)
 }
 
 func (h *HomeHandler) generateUniqueId(name string, usedIds map[string]bool) string {
-	cleanName := ""
-	for _, r := range strings.ToUpper(name) {
-		if (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
-			cleanName += string(r)
-		}
+	words := strings.Fields(strings.ToUpper(name))
+	if len(words) == 0 {
+		return "USR"
 	}
 
-	if cleanName == "" {
-		cleanName = "USR"
-	}
+	firstWord := words[0]
+	id := firstWord
 
-	// Try first 3 chars
-	id := cleanName
-	if len(id) > 3 {
-		id = id[:3]
-	}
 	if !usedIds[id] {
 		return id
 	}
 
-	// Try first 2 chars + digit (1-9)
-	base2 := cleanName
-	if len(base2) > 2 {
-		base2 = base2[:2]
-	}
-	for i := 1; i <= 9; i++ {
-		candidate := fmt.Sprintf("%s%d", base2, i)
-		if !usedIds[candidate] {
-			return candidate
+	// Collision resolution: append letters from the second word
+	if len(words) > 1 {
+		secondWord := words[1]
+		currentId := id
+		for i := 0; i < len(secondWord); i++ {
+			currentId += string(secondWord[i])
+			if !usedIds[currentId] {
+				return currentId
+			}
 		}
+		id = currentId // Use the full first word + full second word if still colliding
 	}
 
-	// Try first char + 2 digits (01-99)
-	base1 := string(cleanName[0])
+	// Final fallback: append numbers if still not unique
+	baseId := id
 	for i := 1; i <= 99; i++ {
-		candidate := fmt.Sprintf("%s%02d", base1, i)
+		candidate := fmt.Sprintf("%s%d", baseId, i)
 		if !usedIds[candidate] {
 			return candidate
 		}
 	}
 
-	// Fallback to serial P01, P02...
-	for i := 1; i <= 99; i++ {
-		candidate := fmt.Sprintf("P%02d", i)
-		if !usedIds[candidate] {
-			return candidate
-		}
-	}
-
-	return uuid.New().String()[:3]
+	return uuid.New().String()[:5]
 }
 
 func GenerateNewBillId(place string, splitDate time.Time) string {

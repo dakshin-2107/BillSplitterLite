@@ -31,7 +31,7 @@ export function processAction(action: IAction, billData: BillData): BillData {
             }
             break;
         case ActionType.ADD_TAKER_FOR_ITEM:
-            if (newBillData.items[action.itemId]) {
+            if (newBillData.items[action.itemId] && action.takerId) {
                 const item = newBillData.items[action.itemId];
                 const newTakers = { ...item.takers };
                 const current = newTakers[action.takerId] || 0;
@@ -44,7 +44,7 @@ export function processAction(action: IAction, billData: BillData): BillData {
             }
             break;
         case ActionType.DELETE_TAKER_FOR_ITEM:
-            if (newBillData.items[action.itemId] && newBillData.items[action.itemId].takers[action.takerId]) {
+            if (newBillData.items[action.itemId] && action.takerId && newBillData.items[action.itemId].takers[action.takerId]) {
                 const item = newBillData.items[action.itemId];
                 const newTakers = { ...item.takers };
                 const current = newTakers[action.takerId];
@@ -62,10 +62,14 @@ export function processAction(action: IAction, billData: BillData): BillData {
             }
             break;
         case ActionType.ADD_NEW_TAKER:
-            newBillData.participants[action.takerId] = action.itemName || action.takerId;
+            if (action.takerId) {
+                newBillData.participants[action.takerId] = action.itemName || action.takerId;
+            }
             break;
         case ActionType.DELETE_TAKER:
-            delete newBillData.participants[action.takerId];
+            if (action.takerId) {
+                delete newBillData.participants[action.takerId];
+            }
             break;
         case ActionType.HELLO_THERE:
             break;

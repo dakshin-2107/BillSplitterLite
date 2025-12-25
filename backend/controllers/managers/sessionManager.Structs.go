@@ -50,9 +50,17 @@ type SessionManager struct {
 }
 
 type SplitSession struct {
+	SplitID           string
 	ClientConnections map[string]*websocket.Conn
 	AdminConnection   *websocket.Conn
 	ActionCount       int
 	IsSessionActive   bool
 	LastUsed          time.Time
+	BroadcastChannel  chan Action
+	TallyChannel      chan Action
+}
+
+// dummy method for now, will remove it if not needed.
+func (a *Action) ExecuteAction() error {
+	return nil
 }

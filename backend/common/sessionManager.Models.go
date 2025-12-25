@@ -35,6 +35,9 @@ const (
 	DELETE_TAKER
 	EDIT_TAKER
 
+	// edit bill information
+	EDIT_BILL_INFORMATION
+
 	// close the session and delete all the data associated with it
 	BYE_BYE
 )
@@ -49,21 +52,15 @@ type ISessionManager interface {
 	IActionService
 }
 
-type IActionManager interface {
-	QueueAction(action IAction) error
-	DequeueAction() (IAction, error)
-}
-
 type IActionService interface {
 	ExecuteAction(string, string, []byte) (IAction, error)
-	PublishAction(action IAction) error
-	IActionManager
 }
 
 type IAction interface {
 	ExecuteAction() error
 }
 
-// type MyWebSocketConnection struct{ websocket.Conn }
-
-// type ConnectionUpgrader struct{ websocket.Upgrader }
+type IPublisher interface {
+	Run()
+	PublishAction(action IAction) error
+}
