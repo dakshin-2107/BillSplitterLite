@@ -31,39 +31,6 @@ export interface ApiResponse {
     bill?: BillData;
 }
 
-
-// HELLO_THERE = iota
-
-// 	// just to the ping the backend
-// 	PING
-
-// 	// sync the current bill state with the client
-// 	SYNC_BILL_STATE
-
-// 	// basic taker CRUD operations
-// 	ADD_TAKER_FOR_ITEM // operation must be idempotent
-// 	DELETE_TAKER_FOR_ITEM
-
-// 	// increment/decrement the number of shares for a taker in an item
-// 	INCREMENT_TAKER_ID
-// 	DECREMENT_TAKER_ID
-
-// 	// basic item CRUD operations
-// 	ADD_NEW_ITEM
-// 	DELETE_ITEM
-// 	EDIT_ITEM
-
-// 	// create/remove the taker only from the item
-// 	ADD_NEW_TAKER
-// 	DELETE_TAKER
-// 	EDIT_TAKER
-
-// 	// edit bill information
-// 	EDIT_BILL_INFORMATION
-
-// 	// close the session and delete all the data associated with it
-// 	BYE_BYE
-
 export const ActionType = {
     // initiate the session
     HELLO_THERE: 0,
@@ -119,4 +86,23 @@ export interface SocketProvider {
     subscribeToMessages: (callback: (msg: ActionResponse) => void) => void;
     publishAction: (action: IAction) => void;
     readyState: ReadyState;
+    lastMessage: MessageEvent<any> | null;
+}
+
+export interface Tally {
+    userShares: Record<string, UserShare>;
+    actualTotal: number;
+    calculatedTotal: number;
+    totalDifference: number;
+}
+
+export interface UserShare {
+    shares: Record<string, number>;
+    userShareTotal: number;
+}
+
+export interface TallyResponse {
+    success: boolean;
+    message: string;
+    tally: Tally;
 }

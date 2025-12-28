@@ -1,4 +1,4 @@
-import React, { useState, type FormEvent, type ChangeEvent, useContext, createContext, useMemo } from 'react';
+import React, { useState, type FormEvent, type ChangeEvent, useMemo } from 'react';
 import './BillForm.css';
 import type { BillData, FormData, ApiResponse } from '../../common/interfaces';
 
@@ -195,6 +195,9 @@ const BillForm: React.FC<BillFormProps> = ({ onSubmitSuccess, onSubmitError }) =
     };
 
     const validPeople = formData.names.filter(person => person.trim() !== '');
+    const isFormIncomplete = useMemo(() => {
+        return !formData.place.trim() || !formData.dateTime || validPeople.length === 0 || !formData.image;
+    }, [formData.place, formData.dateTime, validPeople.length, formData.image]);
 
     return (
         <div className="bill-form-container">
@@ -317,7 +320,7 @@ const BillForm: React.FC<BillFormProps> = ({ onSubmitSuccess, onSubmitError }) =
                             <button
                                 type="submit"
                                 className="btn-submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || isFormIncomplete}
                             >
                                 {isSubmitting ? 'Creating session...' : 'Create new session'}
                             </button>

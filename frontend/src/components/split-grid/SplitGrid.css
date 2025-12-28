@@ -3,12 +3,28 @@
     background: linear-gradient(145deg, #1e1e1e, #252525);
     border-radius: 20px;
     color: #f5f5f7;
-    width: 80vw;
+    width: 90vw;
     /* max-width constraint removed to allow wider displays if needed, or set to a larger value */
     max-width: 2000px;
     margin: 2rem auto;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.main-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.table-section {
+    flex: 1;
+    min-width: 0;
+    /* Prevent overflow issues in flexbox */
+}
+
+.tally-section {
+    flex: 0 0 auto;
 }
 
 .split-grid-header {
@@ -129,8 +145,7 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.left-controls,
-.right-controls {
+.left-controls {
     display: flex;
     gap: 1rem;
     align-items: center;

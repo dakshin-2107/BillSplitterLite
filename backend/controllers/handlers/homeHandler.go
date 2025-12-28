@@ -47,12 +47,14 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 		if imageErr == nil {
 
 			newSplit := h.ModelHelper.CreateNewSplit()
-			newSplit.CreatedAt = common.CreateSplitDate(time.Now())
-			newSplit.LastUpdated = common.CreateSplitDate(time.Now())
-			//h.ParseItemsFromImage(image, newSplit)
-			h.ParseItemsFromImageDummy(image, newSplit)
+			newSplit.CreatedAt = time.Now()
+			newSplit.LastUpdated = time.Now()
+			h.ParseItemsFromImage(image, newSplit)
+			//h.ParseItemsFromImageDummy(image, newSplit)
 
 			h.CreateParticipantsMap(names, newSplit)
+			newSplit.Date = common.CreateSplitDate(splitDate)
+			newSplit.Location = place
 			newSplit.BillID = GenerateNewBillId(place, splitDate)
 			err := h.ModelHelper.AddBillIfNotExists(newSplit)
 			if err == nil {

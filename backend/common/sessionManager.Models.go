@@ -44,8 +44,8 @@ const (
 
 type ISessionManager interface {
 	Init(logger logger.ILogger, connUpgrader *websocket.Upgrader, modelHelper ISplitModelHelper)
-	GetSessionConnnections(sessionId string) (map[string]*websocket.Conn, error)
-	CreateNewSession(sessionId string, userid string, ctx *gin.Context) (*websocket.Conn, error)
+	GetAllSessionConnections(sessionId string) (map[string]*websocket.Conn, error)
+	GetUserSessionConnection(sessionId string, userid string, ctx *gin.Context) (*websocket.Conn, error)
 	AddConnection(sessionId string, newConnection *websocket.Conn) error
 	CleanSessions() error
 	DeleteSession(sessionId string) error
@@ -53,7 +53,7 @@ type ISessionManager interface {
 }
 
 type IActionService interface {
-	ExecuteAction(string, string, []byte) (IAction, error)
+	ExecuteAction(string, string, []byte) error
 }
 
 type IAction interface {
@@ -63,4 +63,16 @@ type IAction interface {
 type IPublisher interface {
 	Run()
 	PublishAction(action IAction) error
+}
+
+type Tally struct {
+	UserShares      map[string]UserShare `json:"userShares"`
+	ActualTotal     float32              `json:"actualTotal"`
+	CalculatedTotal float32              `json:"calculatedTotal"`
+	TotalDifference float32              `json:"totalDifference"`
+}
+
+type UserShare struct {
+	Shares         map[string]float32 `json:"shares"`
+	UserShareTotal float32            `json:"userShareTotal"`
 }

@@ -1,19 +1,22 @@
-import { createContext, useRef, useContext } from "react";
+import { createContext, useRef } from "react";
 import type { SocketProvider, ActionResponse, IAction, BillData } from "../../../common/interfaces";
 import { processAction } from "./ActionUtils";
 import useSocket from "react-use-websocket";
 import type { Options } from "react-use-websocket";
-import { ReadyState } from "react-use-websocket";
+import type { Tally, TallyResponse, ApiResponse } from "../../../common/interfaces";
+import { ActionType } from "../../../common/interfaces";
 
 export const SocketContextProvider = createContext<SocketProvider | null>(null);
 
 interface SocketContextProps {
     children: React.ReactNode
     setBillData: React.Dispatch<React.SetStateAction<BillData>>;
+    setTallyData: React.Dispatch<React.SetStateAction<Tally | null>>;
 }
 
-export const SocketContextComponent = ({ children, setBillData }: SocketContextProps) => {
+export const SocketContextComponent = ({ children, setBillData, setTallyData }: SocketContextProps) => {
     const messageListeners = useRef<((msg: ActionResponse) => void)[]>([]);
+    const tallyListeners = useRef<((msg: Tally) => void)[]>([]);
     const socketOptions: Options = {
         share: true,
         reconnectInterval: 500,
@@ -21,18 +24,39 @@ export const SocketContextComponent = ({ children, setBillData }: SocketContextP
         shouldReconnect: () => true, // must be updated to handle reconnection logic
         onMessage: (event) => {
             try {
+                console.log("Message received:", event.data);
                 const actionResponse: ActionResponse = JSON.parse(event.data);
-                console.log("Action received:", actionResponse);
-                if (actionResponse && actionResponse.success) {
+                if (actionResponse && actionResponse.success && actionResponse.action) {
+                    console.log("Action received:", actionResponse);
                     setBillData((oldBillData) => processAction(actionResponse.action, oldBillData));
                     messageListeners.current.forEach(listener => listener(actionResponse));
+                    return;
                 }
+
+                const tallyResponse: TallyResponse = JSON.parse(event.data);
+                if (tallyResponse && tallyResponse.success) {
+                    console.log("Tally received:", tallyResponse);
+                    setTallyData(tallyResponse.tally);
+                    tallyListeners.current.forEach(listener => listener(tallyResponse.tally));
+                    return;
+                }
+
+                const billResponse: ApiResponse = JSON.parse(event.data);
+                if (billResponse && billResponse.success && billResponse.bill) {
+                    console.log("Bill received:", billResponse);
+                    setBillData(billResponse.bill);
+                }
+
             } catch (err) {
                 console.error("Error parsing WebSocket message:", err);
             }
         },
         onOpen: () => {
             console.log('WebSocket connected');
+            publishAction({
+                actionType: ActionType.SYNC_BILL_STATE,
+                itemId: "0"
+            });
         },
         onClose: () => {
             console.log('WebSocket disconnected');
@@ -42,7 +66,7 @@ export const SocketContextComponent = ({ children, setBillData }: SocketContextP
         }
     }
 
-    const { sendMessage, readyState } = useSocket(import.meta.env.VITE_WEBSOCKET_URL, socketOptions)
+    const { sendMessage, lastMessage, readyState } = useSocket(import.meta.env.VITE_WEBSOCKET_URL, socketOptions)
 
     const subscribeToMessages = (callBack: (msg: ActionResponse) => void) => {
         messageListeners.current.push(callBack);
@@ -53,7 +77,7 @@ export const SocketContextComponent = ({ children, setBillData }: SocketContextP
     }
 
     return (
-        <SocketContextProvider.Provider value={{ subscribeToMessages, publishAction, readyState }}>
+        <SocketContextProvider.Provider value={{ subscribeToMessages, publishAction, readyState, lastMessage }}>
             {children}
         </SocketContextProvider.Provider>
     );

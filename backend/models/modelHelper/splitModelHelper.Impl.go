@@ -80,7 +80,7 @@ func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
 		Status:       common.BILL_STATUS_ACTIVE,
 		Location:     "",
 		Date:         common.CreateSplitDate(time.Now()),
-		CreatedAt:    common.CreateSplitDate(time.Now()),
-		LastUpdated:  common.CreateSplitDate(time.Now()),
+		CreatedAt:    time.Now(),
+		LastUpdated:  time.Now(),
 	}
 }

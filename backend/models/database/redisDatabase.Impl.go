@@ -157,18 +157,22 @@ func (r *RedisDatabaseConnection) DeleteItemTaker(splitId string, itemId string,
 		path := fmt.Sprintf("$.items.%v.takers.%v", itemId, takerId)
 		result, incrErr := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, path, -1).Result()
 		if incrErr == nil {
-			if updatedCount, ok := r.CheckResult(result); ok && updatedCount >= 0 {
-				r.logger.DebugLog(fmt.Sprintf("taker(ID : %v, count : %v) decrement for item(ID : %v)", takerId, updatedCount, itemId))
-				return nil
-			} else {
-				_, setErr := r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, 0).Result()
-				if setErr != redis.Nil {
-					r.logger.InfoLog(fmt.Sprintf("Error deleting item taker to split in Redis: %v", setErr))
-					return setErr
+			if updatedCount, ok := r.CheckResult(result); ok {
+				if updatedCount <= 0 {
+					// Delete the taker from the item if share count reaches 0 or less
+					err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Err()
+					if err != nil {
+						r.logger.InfoLog(fmt.Sprintf("Error deleting zero-share taker from split in Redis: %v", err))
+						return err
+					}
+					r.logger.DebugLog(fmt.Sprintf("taker(ID : %v) removed from item(ID : %v) as count reached %v", takerId, itemId, updatedCount))
+				} else {
+					r.logger.DebugLog(fmt.Sprintf("taker(ID : %v, count : %v) decrement for item(ID : %v)", takerId, updatedCount, itemId))
 				}
-
 				return nil
 			}
+		} else {
+			return incrErr
 		}
 	}
 

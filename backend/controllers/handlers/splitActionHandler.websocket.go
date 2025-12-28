@@ -37,7 +37,7 @@ func (sp *SplitActionWsHandler) Handle(ctx *gin.Context) {
 		return
 	}
 
-	conn, err := sp.SessionManager.CreateNewSession(billID, userID, ctx)
+	conn, err := sp.SessionManager.GetUserSessionConnection(billID, userID, ctx)
 	if err != nil {
 		sp.Logger.DebugLog(fmt.Sprintf("WebSocket upgrade failed: %v", err))
 		return
@@ -49,20 +49,14 @@ func (sp *SplitActionWsHandler) Handle(ctx *gin.Context) {
 
 		_, actionMsg, err := conn.ReadMessage()
 		if err != nil {
-			conn.Close()
-			sp.Logger.DebugLog(fmt.Sprintf("Read error: %v", err))
-			break
+			conn, err = sp.SessionManager.GetUserSessionConnection(billID, userID, ctx)
+			if err != nil {
+				sp.Logger.DebugLog(fmt.Sprintf("WebSocket upgrade failed: %v", err))
+				return
+			}
 		}
 
-		if action, err := sp.SessionManager.ExecuteAction(billID, userID, actionMsg); err == nil {
-			sp.Logger.DebugLog(fmt.Sprintf("Action executed successfully: %v", action))
-			conn.WriteJSON(common.ActionExecutionSuccessResponse(action))
-		} else {
-			sp.Logger.DebugLog(fmt.Sprintf("Action execution failed: %v", err))
-			conn.WriteJSON(common.ActionExecutionFailureResponse(nil, err))
-			conn.Close()
-			break
-		}
+		sp.SessionManager.ExecuteAction(billID, userID, actionMsg)
 	}
 }
 

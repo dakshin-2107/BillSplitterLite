@@ -2,25 +2,39 @@ package common
 
 import "github.com/gin-gonic/gin"
 
-// ActionExecutionResponse creates a standardized response for action execution
-func ActionExecutionResponse(success bool, message string, action IAction) gin.H {
+func TallyResponse(tally Tally) gin.H {
 	return gin.H{
-		"success": success,
-		"message": message,
-		"action":  action,
+		"success": true,
+		"message": "Tally has been calculated",
+		"tally":   tally,
+	}
+}
+
+func BillResponse(bill Split) gin.H {
+	return gin.H{
+		"success": true,
+		"message": "Bill has been fetched",
+		"bill":    bill,
 	}
 }
 
 // ActionExecutionSuccessResponse creates a success response for action execution
 func ActionExecutionSuccessResponse(action IAction) gin.H {
-	return ActionExecutionResponse(true, "action was executed", action)
+	return gin.H{
+		"success": true,
+		"message": "Action executed successfully",
+		"action":  action,
+	}
 }
 
 // ActionExecutionFailureResponse creates a failure response for action execution
 func ActionExecutionFailureResponse(action IAction, err error) gin.H {
-	response := ActionExecutionResponse(false, "action could not be executed or socket was closed", action)
-	response["err"] = err
-	return response
+	return gin.H{
+		"success": false,
+		"message": "action could not be executed or socket was closed",
+		"action":  action,
+		"err":     err,
+	}
 }
 
 // SessionCreationSuccessResponse creates a success response for session creation

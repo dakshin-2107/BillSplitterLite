@@ -7,7 +7,7 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 )
 
-func (s *SessionManager) ExecuteAction(billID string, userID string, actionData []byte) (common.IAction, error) {
+func (s *SessionManager) ExecuteAction(billID string, userID string, actionData []byte) error {
 	var action Action
 	err := json.Unmarshal(actionData, &action)
 	if err == nil {
@@ -22,7 +22,18 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 
 		case common.BYE_BYE:
 			s.logger.DebugLog("Bye Bye")
-			return nil, fmt.Errorf("bye bye")
+			s.SessionDict[billID].SignalChannel <- action
+			s.ModelHelper.DeleteBillIfExists(billID)
+			return fmt.Errorf("bye bye")
+
+		case common.SYNC_BILL_STATE:
+			s.logger.DebugLog("Sync Bill State")
+			bill, err := s.ModelHelper.GetBill(billID)
+			if err != nil {
+				return err
+			}
+
+			s.SessionDict[billID].BroadcastChannel <- common.BillResponse(*bill)
 
 		// item cases
 		case common.ADD_NEW_ITEM:
@@ -72,5 +83,12 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 		}
 	}
 
-	return &action, err
+	if err == nil {
+		s.SessionDict[billID].RequiresNewTally = true
+		s.SessionDict[billID].BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
+	} else {
+		s.logger.DebugLog(fmt.Sprintf("Failed to execute action: %v", err))
+	}
+
+	return err
 }

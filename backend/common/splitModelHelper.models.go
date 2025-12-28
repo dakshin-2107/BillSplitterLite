@@ -1,7 +1,6 @@
 package common
 
 import (
-	"strings"
 	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
@@ -17,9 +16,9 @@ type Split struct {
 	Participants map[string]string `json:"participants"` // map of takerName -> takerId
 	Status       int               `json:"status"`
 	Location     string            `json:"location"`
-	Date         SplitDate         `json:"date"`
-	CreatedAt    SplitDate         `json:"createdAt"`
-	LastUpdated  SplitDate         `json:"lastUpdated"`
+	Date         string            `json:"date"`
+	CreatedAt    time.Time         `json:"createdAt"`
+	LastUpdated  time.Time         `json:"lastUpdated"`
 }
 
 type Item struct {
@@ -51,45 +50,8 @@ type ISplitModelHelper interface {
 	ISplitModifier
 }
 
-type SplitDate struct{ string }
-
-// object -> JSON type
-func (d SplitDate) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + d.string + `"`), nil
-}
-
-// JSON string -> object
-func (d *SplitDate) UnmarshalJSON(data []byte) error {
-	s := strings.Trim(string(data), `"`)
-	t, err := time.Parse("02/01/2006", s)
-	if err == nil {
-		d.string = t.Format("02/01/2006")
-		return nil
-	}
-
-	t, err = time.Parse("02/01/06", s)
-	if err == nil {
-		d.string = t.Format("02/01/2006")
-		return nil
-	}
-
-	t, err = time.Parse("02-Jan-2006", s)
-	if err == nil {
-		d.string = t.Format("02/01/2006")
-		return nil
-	}
-
-	t, err = time.Parse("02-Jan-06", s)
-	if err == nil {
-		d.string = t.Format("02/01/2006")
-		return nil
-	}
-
-	return err
-}
-
-func CreateSplitDate(t time.Time) SplitDate {
+func CreateSplitDate(t time.Time) string {
 	// dateTimeStr := t.Format("02/01/2006 15:04:05")
 	dateStr := t.Format("02/01/2006")
-	return SplitDate{string: dateStr}
+	return dateStr
 }
