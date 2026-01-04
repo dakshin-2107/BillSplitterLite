@@ -13,42 +13,35 @@ const Home: React.FC = () => {
     // checks for existing session
     useEffect(() => {
         const checkExistingSession = async () => {
-            const cookies = document.cookie.split(';');
-            const isBillLoaded = cookies.some(cookie => cookie.trim().startsWith("hello_there"));
 
-            if (isBillLoaded) {
-                setIsLoading(true);
-                try {
-                    const apiUrl = import.meta.env.VITE_BACKEND_URL;
-                    if (!apiUrl) {
-                        console.error("Backend URL not found");
-                        return;
-                    }
-
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        credentials: 'include', // FYI: this is required for cookies to be sent
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Server error: ${response.statusText}`);
-                    }
-
-                    const result: ApiResponse = await response.json();
-
-                    if (result.success && result.bill) {
-                        setBillData(result.bill);
-                    } else {
-                        // If fetch fails or success is false, maybe clear the cookie? 
-                        // For now, just log it and let the user see the form.
-                        console.error("Failed to restore session:", result.message);
-                        // document.cookie = "IS_BILL_LOADED=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                    }
-                } catch (err) {
-                    console.error("Error restoring session:", err);
-                } finally {
-                    setIsLoading(false);
+            setIsLoading(true);
+            try {
+                const apiUrl = import.meta.env.VITE_BACKEND_URL;
+                if (!apiUrl) {
+                    console.error("Backend URL not found");
+                    return;
                 }
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    credentials: 'include', // FYI: this is required for cookies to be sent
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText}`);
+                }
+
+                const result: ApiResponse = await response.json();
+
+                if (result.success && result.bill) {
+                    setBillData(result.bill);
+                } else {
+                    console.error("Failed to restore session:", result.message);
+                }
+            } catch (err) {
+                console.error("Error restoring session:", err);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -67,20 +60,20 @@ const Home: React.FC = () => {
         setBillData(null);
     };
 
-    // Handle going back to form from SplitGrid
-    const handleBackToForm = () => {
-        setBillData(null);
-        setError(null);
-    };
+    // // Handle going back to form from SplitGrid
+    // const handleBackToForm = () => {
+    //     setBillData(null);
+    //     setError(null);
+    // };
 
     // If we have bill data, show the SplitGrid
     if (billData) {
         return (
             <div className="home-container">
-                <button onClick={handleBackToForm} className="btn-back">
+                {/* <button onClick={handleBackToForm} className="btn-back">
                     ← Back to Form
-                </button>
-                <SplitGrid billData={billData} />
+                </button> */}
+                <SplitGrid billData={billData} setBillData={setBillData} />
             </div>
         );
     }

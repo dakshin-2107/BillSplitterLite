@@ -18,6 +18,14 @@ func BillResponse(bill Split) gin.H {
 	}
 }
 
+func BillDeleteResponse() gin.H {
+	return gin.H{
+		"success": true,
+		"message": "Bill has been deleted",
+		"bill":    nil,
+	}
+}
+
 // ActionExecutionSuccessResponse creates a success response for action execution
 func ActionExecutionSuccessResponse(action IAction) gin.H {
 	return gin.H{

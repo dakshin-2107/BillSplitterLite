@@ -10,7 +10,7 @@ export const SocketContextProvider = createContext<SocketProvider | null>(null);
 
 interface SocketContextProps {
     children: React.ReactNode
-    setBillData: React.Dispatch<React.SetStateAction<BillData>>;
+    setBillData: React.Dispatch<React.SetStateAction<BillData | null>>;
     setTallyData: React.Dispatch<React.SetStateAction<Tally | null>>;
 }
 
@@ -34,7 +34,7 @@ export const SocketContextComponent = ({ children, setBillData, setTallyData }: 
                 }
 
                 const tallyResponse: TallyResponse = JSON.parse(event.data);
-                if (tallyResponse && tallyResponse.success) {
+                if (tallyResponse && tallyResponse.success && tallyResponse.tally) {
                     console.log("Tally received:", tallyResponse);
                     setTallyData(tallyResponse.tally);
                     tallyListeners.current.forEach(listener => listener(tallyResponse.tally));
@@ -42,11 +42,16 @@ export const SocketContextComponent = ({ children, setBillData, setTallyData }: 
                 }
 
                 const billResponse: ApiResponse = JSON.parse(event.data);
-                if (billResponse && billResponse.success && billResponse.bill) {
-                    console.log("Bill received:", billResponse);
-                    setBillData(billResponse.bill);
+                if (billResponse && billResponse.success) {
+                    if (billResponse.bill) {
+                        console.log("Bill received:", billResponse);
+                        setBillData(billResponse.bill);
+                    }
+                    else {
+                        console.log("Bill deleted:", billResponse);
+                        setBillData(null);
+                    }
                 }
-
             } catch (err) {
                 console.error("Error parsing WebSocket message:", err);
             }

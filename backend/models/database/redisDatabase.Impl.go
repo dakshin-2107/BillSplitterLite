@@ -102,6 +102,13 @@ func (r *RedisDatabaseConnection) AddBillItem(splitId string, item common.Item) 
 				r.logger.InfoLog(fmt.Sprintf("error appending item to split in Redis: %v", err))
 				return err
 			}
+
+			// Increment itemIdCounter
+			err = r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, "$.itemIdCounter", 1).Err()
+			if err != nil {
+				r.logger.InfoLog(fmt.Sprintf("error incrementing itemIdCounter in Redis: %v", err))
+				return err
+			}
 		} else {
 			err = fmt.Errorf("item already exists")
 		}
@@ -205,12 +212,42 @@ func (r *RedisDatabaseConnection) DeleteTakerID(splitId string, takerId string) 
 	return errDefault
 }
 
-// maybe wont be required
 func (r *RedisDatabaseConnection) DeleteBillIfExists(splitId string) error {
+	err := r.redisClient.Del(r.ctx, splitId).Err()
+	if err != nil {
+		r.logger.InfoLog(fmt.Sprintf("Error deleting split from Redis: %v", err))
+		return err
+	}
 	return nil
+}
+
+func (r *RedisDatabaseConnection) GetNewItemId(splitID string) string {
+	data, err := r.redisClient.Do(r.ctx, "JSON.GET", splitID, "$.itemIdCounter").Result()
+	if err != nil {
+		r.logger.InfoLog(fmt.Sprintf("Error getting itemIdCounter from Redis: %v", err))
+		return ""
+	}
+
+	var counter []int
+	err = json.Unmarshal([]byte(data.(string)), &counter)
+	if err != nil || len(counter) == 0 {
+		return ""
+	}
+
+	// no need to increment, already done in AddBillItem
+	return fmt.Sprintf("%v", counter[0])
 }
 
 // admin actions
 func (r *RedisDatabaseConnection) UpdateBillMetaData(splitId string, newSplit common.Split) error {
+	return nil
+}
+
+func (r *RedisDatabaseConnection) UpdateBillInformation(splitId string, newTotal float32) error {
+	err := r.redisClient.Do(r.ctx, "JSON.SET", splitId, "$.total", newTotal).Err()
+	if err != nil {
+		r.logger.InfoLog(fmt.Sprintf("Error updating split total in Redis: %v", err))
+		return err
+	}
 	return nil
 }

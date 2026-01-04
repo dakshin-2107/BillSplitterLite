@@ -22,9 +22,10 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 
 		case common.BYE_BYE:
 			s.logger.DebugLog("Bye Bye")
+			s.SessionDict[billID].BroadcastChannel <- common.BillDeleteResponse()
 			s.SessionDict[billID].SignalChannel <- action
 			s.ModelHelper.DeleteBillIfExists(billID)
-			return fmt.Errorf("bye bye")
+			return nil
 
 		case common.SYNC_BILL_STATE:
 			s.logger.DebugLog("Sync Bill State")
@@ -38,7 +39,7 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 		// item cases
 		case common.ADD_NEW_ITEM:
 			newItem := common.Item{
-				Id:     action.ItemId,
+				Id:     s.ModelHelper.GetNewItemId(billID),
 				Name:   action.ItemName,
 				Price:  action.Price,
 				Takers: make(map[string]int, 0),
@@ -80,6 +81,10 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 
 		case common.EDIT_TAKER:
 			s.logger.DebugLog(fmt.Sprintf("editing taker(takerID: %v)", action.TakerId))
+
+		case common.EDIT_BILL_INFORMATION:
+			s.logger.DebugLog("editing bill information")
+			err = s.ModelHelper.UpdateBillInformation(billID, action.Total)
 		}
 	}
 

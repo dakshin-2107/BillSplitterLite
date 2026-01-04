@@ -32,41 +32,49 @@ func (h *HomeHandler) Init() {
 func (h *HomeHandler) Handle(ctx *gin.Context) {
 
 	billID, billIdErr := ctx.Cookie(common.BILL_SESSION_ID_STR)
-	if split, err := h.ModelHelper.GetBill(billID); billIdErr == nil && err == nil && split != nil {
-
-		ctx.JSON(http.StatusOK, common.SessionAlreadyExistsResponse(*split))
-		return
-	} else {
-
-		ctx.Request.ParseForm()
-		place := ctx.PostForm("place")
-		splitDate, _ := time.Parse("02/01/2006", ctx.PostForm("dateTime"))
-		names := ctx.PostFormArray("names")
-		image, imageErr := ctx.FormFile("image")
-
-		if imageErr == nil {
-
-			newSplit := h.ModelHelper.CreateNewSplit()
-			newSplit.CreatedAt = time.Now()
-			newSplit.LastUpdated = time.Now()
-			h.ParseItemsFromImage(image, newSplit)
-			//h.ParseItemsFromImageDummy(image, newSplit)
-
-			h.CreateParticipantsMap(names, newSplit)
-			newSplit.Date = common.CreateSplitDate(splitDate)
-			newSplit.Location = place
-			newSplit.BillID = GenerateNewBillId(place, splitDate)
-			err := h.ModelHelper.AddBillIfNotExists(newSplit)
-			if err == nil {
-				// TODO: Update the cookie age limit
-				ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.BillID, math.MaxInt64, "/", "localhost", true, true)
-				// TODO: Update the cookie age limit and extract the user name
-				ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", "localhost", true, true)
-				ctx.SetCookie(common.HELLO_THERE_STR, "General Kenobi", math.MaxInt64, "/", "localhost", false, false)
-				ctx.JSON(http.StatusOK, common.SessionCreationSuccessResponse(*newSplit))
-				return
-			}
+	// if bill cookie exists, find the bill
+	if billIdErr == nil {
+		// if bill exists, return the bill
+		if split, err := h.ModelHelper.GetBill(billID); err == nil && split != nil {
+			ctx.JSON(http.StatusOK, common.SessionAlreadyExistsResponse(*split))
+			return
 		}
+	}
+
+	// if bill does not exist in DB, create new bill info from the form
+	ctx.Request.ParseForm()
+	place := ctx.PostForm("place")
+	splitDate := ctx.PostForm("dateTime")
+	names := ctx.PostFormArray("names")
+	image, imageErr := ctx.FormFile("image")
+
+	if imageErr == nil && splitDate != "" && place != "" && names != nil && len(names) > 0 {
+
+		newSplit := h.ModelHelper.CreateNewSplit()
+		newSplit.CreatedAt = time.Now()
+		newSplit.LastUpdated = time.Now()
+		h.ParseItemsFromImage(image, newSplit)
+		//h.ParseItemsFromImageDummy(image, newSplit)
+
+		h.CreateParticipantsMap(names, newSplit)
+		newSplit.Date = splitDate
+		newSplit.Location = place
+		newSplit.BillID = uuid.New().String()
+		newSplit.ItemIdCounter = len(newSplit.Items) + 1
+		err := h.ModelHelper.AddBillIfNotExists(newSplit)
+		if err == nil {
+			// TODO: Update the bill cookie age limit
+			// TODO: Update the user cookie age limit and extract the user name
+			ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.BillID, math.MaxInt64, "/", "localhost", true, true)
+			ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", "localhost", true, true)
+			ctx.JSON(http.StatusOK, common.SessionCreationSuccessResponse(*newSplit))
+			return
+		}
+
+	} else {
+		// clear the cookies and return failure
+		ctx.SetCookie(common.BILL_SESSION_ID_STR, "", -1, "/", "localhost", true, true)
+		ctx.SetCookie(common.USER_SESSION_ID_STR, "", -1, "/", "localhost", true, true)
 	}
 
 	ctx.JSON(http.StatusOK, common.SessionCreationFailureResponse())
@@ -140,10 +148,6 @@ func (h *HomeHandler) generateUniqueId(name string, usedIds map[string]bool) str
 	}
 
 	return uuid.New().String()[:5]
-}
-
-func GenerateNewBillId(place string, splitDate time.Time) string {
-	return uuid.New().String()
 }
 
 func testHome() common.IRouteHandlerBase {

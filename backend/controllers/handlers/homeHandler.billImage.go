@@ -20,6 +20,8 @@ const AI_Prompt string = `Using the image provided of a bill and return the foll
 For location get the only name of the place, do not get the entire address. If not an empty string. Handle the date similarly. Add the date only in dd-mm-yyyy format.
 Find the tax amount as well, it is usually written as Tax or GST or SGST/CGST or service charge or service tax or VAT or any other similar term. Add all of them 
 as a single item called "Bill tax". GST is the sum of SGST and CGST. Do not add all 3, add only GST or the sum of CGST or SGST. Add any roundoff amount to the tax item.
+In some bills for each item there is rate, quantity and amount. In that case, use only the amount for the price of the item. 
+Nromalize all item names to sentence case.
 {
 	"date": "<date on the bill>",
 	"location": "<location on the bill>",

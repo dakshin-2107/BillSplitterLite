@@ -67,8 +67,16 @@ func (sp *SplitModelHelper) DeleteTakerID(splitId string, takerId string) error 
 	return sp.db.DeleteTakerID(splitId, takerId)
 }
 
+func (sp *SplitModelHelper) GetNewItemId(splitID string) string {
+	return sp.db.GetNewItemId(splitID)
+}
+
 func (sp *SplitModelHelper) GetBill(billId string) (*common.Split, error) {
 	return sp.db.GetBill(billId)
+}
+
+func (sp *SplitModelHelper) UpdateBillInformation(splitId string, newTotal float32) error {
+	return sp.db.UpdateBillInformation(splitId, newTotal)
 }
 
 func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
@@ -77,9 +85,8 @@ func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
 		Items:        make(map[string]common.Item),
 		TotalAmount:  0.0,
 		Participants: make(map[string]string),
-		Status:       common.BILL_STATUS_ACTIVE,
 		Location:     "",
-		Date:         common.CreateSplitDate(time.Now()),
+		Date:         time.Now().String(),
 		CreatedAt:    time.Now(),
 		LastUpdated:  time.Now(),
 	}

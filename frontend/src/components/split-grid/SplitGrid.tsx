@@ -12,15 +12,14 @@ import TallyPanel from './tally-panel/TallyPanel';
 import BillDebugger from '../debug/BillDebugger';
 import BillActions from './bill-actions/BillActions';
 
-/*
-    - Create a grid that is rendered based on the split JSON object 
-    - All actions performed are routed through the action mananger
-*/
+interface SplitGridProps {
+    billData: BillData;
+    setBillData: React.Dispatch<React.SetStateAction<BillData | null>>;
+}
 
-const SplitGrid: React.FC<{ billData: BillData }> = ({ billData: initialBillData }) => {
+const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
 
     const [tally, setTally] = React.useState<Tally | null>(null);
-    const [billData, setBillData] = React.useState<BillData>(initialBillData);
     const [activeItem, setActiveItem] = React.useState<{ id: string, name: string } | null>(null);
     const [isAddItemPopupOpen, setIsAddItemPopupOpen] = React.useState(false);
 
@@ -50,93 +49,89 @@ const SplitGrid: React.FC<{ billData: BillData }> = ({ billData: initialBillData
 
     return (
         <SocketContextComponent setBillData={setBillData} setTallyData={setTally}>
-            <div className="split-grid-container">
-                <div className="split-grid-header">
-                    <h1 className="split-grid-title">{billData.location}-{billData.date}</h1>
-                    <StatusIndicator />
-                </div>
+            {billData && (
+                <div className="split-grid-container">
+                    <div className="split-grid-header">
+                        <h1 className="split-grid-title">Split the bill</h1>
+                        <StatusIndicator />
+                    </div>
 
-                <TakersPanel
-                    participants={billData.participants}
-                    activeItem={activeItem}
-                />
+                    <TakersPanel
+                        participants={billData.participants}
+                        activeItem={activeItem}
+                    />
 
-                <div className="main-layout">
-                    <div className="table-section">
-                        <div className="table-wrapper">
-                            <table className="split-table">
-                                <thead>
-                                    <tr>
-                                        <th>Actions</th>
-                                        <th>Number</th>
-                                        <th>Item Name</th>
-                                        <th>Price</th>
-                                        <th>Takers</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {Object.values(billData.items).map((item, index) => (
-                                        <tr key={item.id || index}>
-                                            <td>
-                                                <ItemActionCell
-                                                    item={item}
-                                                />
-                                            </td>
-                                            <td>{index + 1}</td>
-                                            <td>{item.name}</td>
-                                            <td>{item.price.toFixed(2)}</td>
-                                            <td className="takers-cell">
-                                                <TakerCell
-                                                    takers={item.takers}
-                                                    itemId={item.id}
-                                                    itemName={item.name}
-                                                    onAddTakerClick={handleAddTakerClick}
-                                                />
-                                            </td>
+                    <div className="main-layout">
+                        <div className="table-section">
+                            <div className="table-wrapper">
+                                <table className="split-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Actions</th>
+                                            <th>Number</th>
+                                            <th>Item Name</th>
+                                            <th>Price</th>
+                                            <th>Takers</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                                {/* <tfoot>
-                            <tr>
-                                <td colSpan={3}>Total</td>
-                                <td>{billData.total}</td>
-                            </tr>
-                        </tfoot> */}
-                            </table>
-                            <div className="grid-controls">
-                                <div className="left-controls">
-                                    <button
-                                        className="control-btn add-btn"
-                                        onClick={() => setIsAddItemPopupOpen(true)}
-                                    >
-                                        + Add New Item
-                                    </button>
+                                    </thead>
+                                    <tbody>
+                                        {Object.values(billData.items).map((item, index) => (
+                                            <tr key={item.id || index}>
+                                                <td>
+                                                    <ItemActionCell
+                                                        item={item}
+                                                    />
+                                                </td>
+                                                <td>{index + 1}</td>
+                                                <td>{item.name}</td>
+                                                <td>{item.price.toFixed(2)}</td>
+                                                <td className="takers-cell">
+                                                    <TakerCell
+                                                        takers={item.takers}
+                                                        itemId={item.id}
+                                                        itemName={item.name}
+                                                        onAddTakerClick={handleAddTakerClick}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <div className="grid-controls">
+                                    <div className="left-controls">
+                                        <button
+                                            className="control-btn add-btn"
+                                            onClick={() => setIsAddItemPopupOpen(true)}
+                                        >
+                                            + Add New Item
+                                        </button>
+                                    </div>
+                                    <BillActions />
                                 </div>
-                                <BillActions />
+
+                                {isAddItemPopupOpen && (
+                                    <ItemPopup
+                                        onClose={() => setIsAddItemPopupOpen(false)}
+                                        newItemId={Object.values(billData.items).length + 1}
+                                    />
+                                )}
+
+                                {/* Debugger to visualize state updates */}
+                                {/*<BillDebugger billData={billData} />*/}
+                                {/*<LastMessage />*/}
                             </div>
+                        </div>
 
-                            {isAddItemPopupOpen && (
-                                <ItemPopup
-                                    onClose={() => setIsAddItemPopupOpen(false)}
-                                    newItemId={Object.values(billData.items).length + 1}
-                                />
-                            )}
-
-                            {/* Debugger to visualize state updates */}
-                            {/*<BillDebugger billData={billData} />*/}
-                            {/*<LastMessage />*/}
+                        <div className="tally-section">
+                            <TallyPanel
+                                tally={tally}
+                                participants={billData.participants}
+                                billData={billData}
+                            />
                         </div>
                     </div>
-
-                    <div className="tally-section">
-                        <TallyPanel
-                            tally={tally}
-                            participants={billData.participants}
-                            billData={billData}
-                        />
-                    </div>
                 </div>
-            </div>
+            )}
         </SocketContextComponent>
     )
 }

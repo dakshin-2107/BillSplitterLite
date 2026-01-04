@@ -35,6 +35,7 @@ func main() {
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.PingHandler]),
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.HomeHandler]),
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.SplitActionWsHandler]),
+		utils.CreateHandlerProvider(utils.NewHandler[handlers.CloseHandler]),
 
 		// route creator
 		utils.CreateHandlerConsumer(utils.NewRouteCreater, new(routes.IRouteCreator)),

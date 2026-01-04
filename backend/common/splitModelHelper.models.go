@@ -6,19 +6,16 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
 )
 
-const BILL_STATUS_COMPLETED = 1
-const BILL_STATUS_ACTIVE = 0
-
 type Split struct {
-	BillID       string            `json:"billId"`
-	Items        map[string]Item   `json:"items"`
-	TotalAmount  float64           `json:"total"`
-	Participants map[string]string `json:"participants"` // map of takerName -> takerId
-	Status       int               `json:"status"`
-	Location     string            `json:"location"`
-	Date         string            `json:"date"`
-	CreatedAt    time.Time         `json:"createdAt"`
-	LastUpdated  time.Time         `json:"lastUpdated"`
+	BillID        string            `json:"billId"`
+	Items         map[string]Item   `json:"items"`
+	TotalAmount   float32           `json:"total"`
+	Participants  map[string]string `json:"participants"` // map of takerName -> takerId
+	ItemIdCounter int               `json:"itemIdCounter"`
+	Location      string            `json:"location"`
+	Date          string            `json:"date"`
+	CreatedAt     time.Time         `json:"createdAt"`
+	LastUpdated   time.Time         `json:"lastUpdated"`
 }
 
 type Item struct {
@@ -34,6 +31,7 @@ type ISplitModifier interface {
 	DeleteBillIfExists(splitId string) error
 
 	UpdateBillMetaData(splitId string, newSplit Split) error
+	GetNewItemId(splitID string) string
 	AddBillItem(splitId string, item Item) error
 	DeleteBillItem(splitId string, itemId string) error
 
@@ -42,16 +40,12 @@ type ISplitModifier interface {
 
 	AddTakerID(splitId string, takerId string, takerName string) error
 	DeleteTakerID(splitId string, takerId string) error
+
+	UpdateBillInformation(splitId string, newTotal float32) error
 }
 
 type ISplitModelHelper interface {
 	Init(db IDatabase, logger logger.ILogger)
 	CreateNewSplit() *Split
 	ISplitModifier
-}
-
-func CreateSplitDate(t time.Time) string {
-	// dateTimeStr := t.Format("02/01/2006 15:04:05")
-	dateStr := t.Format("02/01/2006")
-	return dateStr
 }

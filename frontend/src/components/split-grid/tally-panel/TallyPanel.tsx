@@ -1,7 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import './TallyPanel.css';
 import type { Tally, BillData } from '../../../common/interfaces';
 import html2canvas from 'html2canvas';
+import { SocketContextProvider } from '../action-manager/SocketContext';
+import { ActionType } from '../../../common/interfaces';
 
 interface TallyPanelProps {
     tally: Tally | null;
@@ -10,27 +12,10 @@ interface TallyPanelProps {
 }
 
 const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }) => {
-    const panelRef = useRef<HTMLDivElement>(null);
-
-    // const handleCopy = () => {
-    //     if (!tally) return;
-
-    //     const location = `${billData.location} - ${billData.date}`;
-
-    //     const userBreakdown = Object.entries(tally.userShares)
-    //         .map(([userId, userShare]) => {
-    //             const name = participants[userId] || userId;
-    //             return `${name} - ${userShare.userShareTotal.toFixed(2)}`;
-    //         })
-    //         .join('\n');
-
-    //     const textToCopy = `Location: ${location}\nDate: ${billData.date}\n\nPer person breakdown:\n${userBreakdown}\n\nTotal - ${tally.calculatedTotal.toFixed(2)}`;
-    //     navigator.clipboard.writeText(textToCopy).then(() => {
-    //         // Optional: Add a temporary "Copied!" state if needed, but for now just console log
-    //         console.log("Tally copied to clipboard");
-    //     });
-    // };
-
+    const SocketContext = useContext(SocketContextProvider);
+    const panelRef = useRef<HTMLDivElement>(null)
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [newTotal, setNewTotal] = useState<number>(billData.total);
     const handleCopyImage = async () => {
         if (!panelRef.current) return;
 
@@ -61,6 +46,19 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
         }
     };
 
+    const handleSaveTotal = () => {
+        setIsEditing(false);
+        if (SocketContext) {
+            SocketContext.publishAction({
+                actionId: 0,
+                actionType: ActionType.EDIT_BILL_INFO,
+                splitId: billData.splitId,
+                itemId: "",
+                total: newTotal
+            })
+        }
+    }
+
     if (!tally) {
         return (
             <div className="tally-panel empty">
@@ -73,13 +71,16 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
     return (
         <div className="tally-panel" ref={panelRef}>
             <div className="panel-header">
-                <h3>Per user split</h3>
-                {/* <button className="copy-btn" onClick={handleCopy}>
-                    Copy text
-                </button> */}
-                <button className="copy-btn" onClick={handleCopyImage}>
-                    Copy
-                </button>
+                <div className="bill-info">
+                    <h2 className="bill-location">{billData.location}</h2>
+                    <span className="bill-date">{billData.date}</span>
+                </div>
+                <div className="header-actions">
+                    <span className="split-label">Per user split</span>
+                    <button className="copy-btn" onClick={handleCopyImage}>
+                        Copy
+                    </button>
+                </div>
             </div>
             <div className="user-shares-list">
                 {Object.entries(tally.userShares).map(([userId, userShare]) => (
@@ -103,16 +104,41 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
             <div className="tally-header">
                 <h3></h3>
                 <div className="total-summary">
-                    <div className="summary-item">
-                        <span>Actual:</span>
-                        <span className="amount">{tally.actualTotal.toFixed(2)}</span>
+                    <div className="summary-item actual">
+                        <span>Actual (Y):</span>
+                        <div className="edit-total-container">
+                            {isEditing ? (
+                                <>
+                                    <input
+                                        type="number"
+                                        value={newTotal}
+                                        onChange={(e) => setNewTotal(Number(e.target.value))}
+                                        className="edit-total-input"
+                                        autoFocus
+                                    />
+                                    <button className="inline-action-btn save" onClick={handleSaveTotal} title="Save">
+                                        ✓
+                                    </button>
+                                    <button className="inline-action-btn cancel" onClick={() => setIsEditing(false)} title="Cancel">
+                                        ✕
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button className="edit-trigger" onClick={() => setIsEditing(true)}>
+                                        Edit
+                                    </button>
+                                    <span className="amount">{billData.total.toFixed(2)}</span>
+                                </>
+                            )}
+                        </div>
                     </div>
                     <div className="summary-item">
-                        <span>Calculated:</span>
+                        <span>Calculated (X):</span>
                         <span className="amount">{tally.calculatedTotal.toFixed(2)}</span>
                     </div>
                     <div className="summary-item difference">
-                        <span>Difference:</span>
+                        <span>Difference (X-Y):</span>
                         <span className={`amount ${tally.totalDifference !== 0 ? 'warning' : 'success'}`}>
                             {tally.totalDifference.toFixed(2)}
                         </span>

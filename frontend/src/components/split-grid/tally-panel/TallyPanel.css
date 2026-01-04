@@ -77,20 +77,44 @@
 }
 
 .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.panel-header h3 {
+.bill-info {
+    margin-bottom: 12px;
+}
+
+.bill-location {
     margin: 0;
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.bill-date {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+}
+
+.split-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
 }
 
 .copy-btn {
@@ -154,4 +178,78 @@
 
 .item-amount {
     font-family: monospace;
+}
+
+/* Inline Editor Styles */
+.summary-item.actual {
+    align-items: center;
+    position: relative;
+}
+
+.edit-trigger {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 2px 6px;
+    margin-left: 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    height: fit-content;
+}
+
+.edit-trigger:hover {
+    color: #64b5f6;
+    background: rgba(100, 181, 246, 0.1);
+}
+
+.edit-total-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.edit-total-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-bottom: 1px solid rgba(100, 181, 246, 0.5);
+    color: #fff;
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    width: 80px;
+    outline: none;
+    text-align: right;
+}
+
+.edit-total-input::-webkit-inner-spin-button,
+.edit-total-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.inline-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.inline-action-btn.save {
+    color: #00e676;
+}
+
+.inline-action-btn.cancel {
+    color: #ff4d4d;
+}
+
+.inline-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
 }

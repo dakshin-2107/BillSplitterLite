@@ -1,7 +1,11 @@
 import { ActionType } from "../../../common/interfaces";
 import type { IAction, BillData } from "../../../common/interfaces";
 
-export function processAction(action: IAction, billData: BillData): BillData {
+export function processAction(action: IAction, billData: BillData | null): BillData | null {
+
+    if (!billData) {
+        return null;
+    }
     // Create a shallow copy of the top-level object
     const newBillData = { ...billData };
 
@@ -71,7 +75,25 @@ export function processAction(action: IAction, billData: BillData): BillData {
                 delete newBillData.participants[action.takerId];
             }
             break;
+
+        case ActionType.EDIT_BILL_INFO:
+            if (action.total) {
+                newBillData.total = action.total;
+            }
+            break;
+
         case ActionType.HELLO_THERE:
+            break;
+
+        case ActionType.BYE_BYE:
+            {
+                fetch(import.meta.env.VITE_BACKEND_URL + '/close', {
+                    method: 'GET',
+                    credentials: 'include'
+                }).finally(() => {
+                    window.location.href = '/';
+                });
+            }
             break;
     }
 

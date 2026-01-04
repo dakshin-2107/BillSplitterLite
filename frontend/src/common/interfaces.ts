@@ -14,6 +14,7 @@ export interface BillData {
     location: string;
     total: number;
     items: Record<string, Item>;
+    itemIdCounter: number;
     participants: Record<string, string>;
 }
 
@@ -59,8 +60,11 @@ export const ActionType = {
     DELETE_TAKER: 11,
     EDIT_TAKER: 12,
 
+    // edit bill information
+    EDIT_BILL_INFO: 13,
+
     // close the session and delete all the data associated with it
-    BYE_BYE: 13
+    BYE_BYE: 14
 } as const;
 
 export type ActionType = typeof ActionType[keyof typeof ActionType];

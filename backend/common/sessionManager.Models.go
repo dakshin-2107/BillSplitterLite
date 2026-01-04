@@ -35,7 +35,7 @@ const (
 	DELETE_TAKER
 	EDIT_TAKER
 
-	// edit bill information
+	// edit bill information - actual bill total for now
 	EDIT_BILL_INFORMATION
 
 	// close the session and delete all the data associated with it

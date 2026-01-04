@@ -49,14 +49,15 @@ func (sp *SplitActionWsHandler) Handle(ctx *gin.Context) {
 
 		_, actionMsg, err := conn.ReadMessage()
 		if err != nil {
-			conn, err = sp.SessionManager.GetUserSessionConnection(billID, userID, ctx)
-			if err != nil {
-				sp.Logger.DebugLog(fmt.Sprintf("WebSocket upgrade failed: %v", err))
-				return
-			}
+			sp.Logger.DebugLog(fmt.Sprintf("could not read message: %v", err))
+			break
 		}
 
-		sp.SessionManager.ExecuteAction(billID, userID, actionMsg)
+		err = sp.SessionManager.ExecuteAction(billID, userID, actionMsg)
+		if err != nil {
+			sp.Logger.DebugLog(fmt.Sprintf("Failed to execute action: %v", err))
+			break
+		}
 	}
 }
 
