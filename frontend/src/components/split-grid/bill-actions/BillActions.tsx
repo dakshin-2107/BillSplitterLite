@@ -3,13 +3,49 @@ import './BillActions.css';
 import { SocketContextProvider } from '../action-manager/SocketContext';
 import { useContext, useState } from 'react';
 import { ActionType } from '../../../common/interfaces';
+import { URLProvider } from '../../../common/urlProvider';
+
+interface ShareBillApiResponse {
+    success: boolean;
+    message: string;
+    sessionId: string;
+}
 
 const BillActions: React.FC = () => {
     const socketContext = useContext(SocketContextProvider);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle');
 
-    const handleShareBill = () => {
-        console.log('Share Bill clicked');
+    const handleShareBill = async () => {
+        if (shareStatus === 'copying' || shareStatus === 'copied') return;
+
+        setShareStatus('copying');
+        try {
+            const generateUrl = URLProvider.getGenerateUrl();
+            const response = await fetch(generateUrl, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Failed to generate session ID');
+
+            const result: ShareBillApiResponse = await response.json();
+            if (result.success && result.sessionId) {
+                const joinLink = `${URLProvider.getSiteOrigin()}/join/${result.sessionId}`;
+                console.log(`Generated join link : ${joinLink}`);
+                await navigator.clipboard.writeText(joinLink); // doesn't work in HTTP 
+                setShareStatus('copied');
+
+                // Reset status after 3 seconds
+                setTimeout(() => setShareStatus('idle'), 3000);
+            } else {
+                throw new Error(result.message || 'Failed to generate session ID');
+            }
+        } catch (err) {
+            console.error('Error sharing bill:', err);
+            setShareStatus('error');
+            setTimeout(() => setShareStatus('idle'), 3000);
+        }
     };
 
     const handleCloseBill = () => {
@@ -32,8 +68,15 @@ const BillActions: React.FC = () => {
 
     return (
         <div className="right-controls">
-            <button className="control-btn share-btn" onClick={handleShareBill}>
-                Share Bill
+            <button
+                className={`control-btn share-btn ${shareStatus}`}
+                onClick={handleShareBill}
+                disabled={shareStatus === 'copying'}
+            >
+                {shareStatus === 'idle' && 'Share Bill'}
+                {shareStatus === 'copying' && 'Generating...'}
+                {shareStatus === 'copied' && 'Link Copied!'}
+                {shareStatus === 'error' && 'Retry Share'}
             </button>
             <button className="control-btn close-btn" onClick={handleCloseBill}>
                 Close Bill

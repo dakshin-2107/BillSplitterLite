@@ -83,3 +83,12 @@ func InvalidRequestBody() gin.H {
 		"message": "Invalid request body",
 	}
 }
+
+// SessionUriResponse creates a success response for session URI generation
+func SessionUriResponse(billID string) gin.H {
+	return gin.H{
+		"success":   true,
+		"message":   "Session URI generated",
+		"sessionId": billID,
+	}
+}

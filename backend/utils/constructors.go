@@ -21,7 +21,7 @@ func CreateGinEngine(logger logger.ILogger) *gin.Engine {
 	r := gin.New()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174", "http://192.168.0.169:5173", "http://192.168.0.169:5174"},
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -98,5 +98,5 @@ func StartApp(r *gin.Engine, logger logger.ILogger, rc routes.IRouteCreator, db 
 		panic("could not connect to redis")
 	}
 
-	r.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
+	r.Run(fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT")))
 }

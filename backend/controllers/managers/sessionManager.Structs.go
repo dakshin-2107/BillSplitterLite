@@ -31,7 +31,7 @@ type SplitSession struct {
 	SplitID           string
 	ClientConnections map[string]*websocket.Conn
 	AdminConnection   *websocket.Conn
-	ActionCount       int
+	UserIdCounter     int
 	RequiresNewTally  bool
 	LastUsed          time.Time
 	BroadcastChannel  chan gin.H

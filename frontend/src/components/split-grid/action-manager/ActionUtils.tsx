@@ -1,5 +1,6 @@
 import { ActionType } from "../../../common/interfaces";
 import type { IAction, BillData } from "../../../common/interfaces";
+import { URLProvider } from "../../../common/urlProvider";
 
 export function processAction(action: IAction, billData: BillData | null): BillData | null {
 
@@ -87,7 +88,7 @@ export function processAction(action: IAction, billData: BillData | null): BillD
 
         case ActionType.BYE_BYE:
             {
-                fetch(import.meta.env.VITE_BACKEND_URL + '/close', {
+                fetch(URLProvider.getCloseUrl(), {
                     method: 'GET',
                     credentials: 'include'
                 }).finally(() => {

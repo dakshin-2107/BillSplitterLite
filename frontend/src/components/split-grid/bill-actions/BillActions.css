@@ -28,9 +28,27 @@
     border-color: rgba(52, 211, 153, 0.2);
 }
 
-.share-btn:hover {
+.share-btn:hover:not(:disabled) {
     background: #34d399;
     color: white;
+}
+
+.share-btn.copied {
+    background: #34d399;
+    color: white;
+    border-color: transparent;
+    cursor: default;
+}
+
+.share-btn.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.share-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 .close-btn {
@@ -76,6 +94,7 @@
         transform: scale(0.9);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;

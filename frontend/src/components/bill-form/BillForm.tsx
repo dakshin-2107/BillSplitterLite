@@ -1,6 +1,7 @@
 import React, { useState, type FormEvent, type ChangeEvent, useMemo } from 'react';
 import './BillForm.css';
 import type { BillData, FormData, ApiResponse } from '../../common/interfaces';
+import { URLProvider } from '../../common/urlProvider';
 
 interface BillFormProps {
     onSubmitSuccess: (billData: BillData) => void;
@@ -142,12 +143,10 @@ const BillForm: React.FC<BillFormProps> = ({ onSubmitSuccess, onSubmitError }) =
                 submitData.append('image', formData.image);
             }
 
-            // Get API URL from environment variable
-            const apiUrl = import.meta.env.VITE_BACKEND_URL;
-            //const apiUrl = "http://localhost:8080/home";
-            if (!apiUrl) {
-                throw new Error('API URL not configured. Please check your .env file.');
-            }
+            // Get API URL from URLProvider
+            const apiUrl = URLProvider.getHomeUrl();
+
+            // Log what we're sending to the endpoint
 
             // Log what we're sending to the endpoint
             console.log('📤 Sending form data to:', apiUrl);

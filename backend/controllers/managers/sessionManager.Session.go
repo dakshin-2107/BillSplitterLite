@@ -21,13 +21,13 @@ func (s *SessionManager) Init(logger logger.ILogger, connUpgrader *websocket.Upg
 	s.SessionDict = make(map[string]*SplitSession)
 }
 
-func (s *SessionManager) GetAllSessionConnections(sessionId string) (map[string]*websocket.Conn, error) {
+func (s *SessionManager) GetNewUserSessionId(sessionId string) (string, error) {
 
 	if session, isPresent := s.SessionDict[sessionId]; isPresent {
-		return session.ClientConnections, nil
+		return fmt.Sprintf("%d", session.UserIdCounter), nil
 	}
 
-	return nil, fmt.Errorf("no session found")
+	return "", fmt.Errorf("no session found")
 }
 
 func (s *SessionManager) GetUserSessionConnection(sessionId string, userID string, ctx *gin.Context) (*websocket.Conn, error) {
@@ -52,6 +52,7 @@ func (s *SessionManager) GetUserSessionConnection(sessionId string, userID strin
 		}
 
 		sess.ClientConnections[userID] = conn
+		sess.UserIdCounter++
 		return conn, nil
 
 	} else {
@@ -66,7 +67,7 @@ func (s *SessionManager) GetUserSessionConnection(sessionId string, userID strin
 			ModelHelper:       s.ModelHelper,
 			ClientConnections: make(map[string]*websocket.Conn),
 			AdminConnection:   wsConn,
-			ActionCount:       0,
+			UserIdCounter:     1,
 			RequiresNewTally:  true,
 			LastUsed:          time.Now(),
 			BroadcastChannel:  make(chan gin.H, 100),

@@ -44,7 +44,7 @@ const (
 
 type ISessionManager interface {
 	Init(logger logger.ILogger, connUpgrader *websocket.Upgrader, modelHelper ISplitModelHelper)
-	GetAllSessionConnections(sessionId string) (map[string]*websocket.Conn, error)
+	GetNewUserSessionId(sessionId string) (string, error)
 	GetUserSessionConnection(sessionId string, userid string, ctx *gin.Context) (*websocket.Conn, error)
 	AddConnection(sessionId string, newConnection *websocket.Conn) error
 	CleanSessions() error

@@ -25,14 +25,9 @@ func (sp *SplitActionWsHandler) Init() {
 func (sp *SplitActionWsHandler) Handle(ctx *gin.Context) {
 
 	// Extract bill id and user id from cookies
-	billID, err := ctx.Cookie(common.BILL_SESSION_ID_STR)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, common.MissingCookieResponse())
-		return
-	}
-
-	userID, err := ctx.Cookie(common.USER_SESSION_ID_STR)
-	if err != nil {
+	billID, billIdErr := ctx.Cookie(common.BILL_SESSION_ID_STR)
+	userID, userIdErr := ctx.Cookie(common.USER_SESSION_ID_STR)
+	if billIdErr != nil || userIdErr != nil {
 		ctx.JSON(http.StatusBadRequest, common.MissingCookieResponse())
 		return
 	}

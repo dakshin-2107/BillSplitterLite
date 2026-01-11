@@ -5,6 +5,7 @@ import useSocket from "react-use-websocket";
 import type { Options } from "react-use-websocket";
 import type { Tally, TallyResponse, ApiResponse } from "../../../common/interfaces";
 import { ActionType } from "../../../common/interfaces";
+import { URLProvider } from "../../../common/urlProvider";
 
 export const SocketContextProvider = createContext<SocketProvider | null>(null);
 
@@ -71,7 +72,8 @@ export const SocketContextComponent = ({ children, setBillData, setTallyData }: 
         }
     }
 
-    const { sendMessage, lastMessage, readyState } = useSocket(import.meta.env.VITE_WEBSOCKET_URL, socketOptions)
+    const socketUrl = URLProvider.getSocketUrl();
+    const { sendMessage, lastMessage, readyState } = useSocket(socketUrl, socketOptions)
 
     const subscribeToMessages = (callBack: (msg: ActionResponse) => void) => {
         messageListeners.current.push(callBack);

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"time"
-
+	"os"
 	"strings"
+	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/gin-gonic/gin"
@@ -15,7 +15,7 @@ import (
 
 /*
 Purpose :
-- receiving the bill image and processing it using AI.
+- receiving the bill image and processing it using AI
 - use the response from the LLM, adds the split in the database
 - return a (session ID, user ID) as part of a cookie and redirect the user to the session created
 */
@@ -53,8 +53,8 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 		newSplit := h.ModelHelper.CreateNewSplit()
 		newSplit.CreatedAt = time.Now()
 		newSplit.LastUpdated = time.Now()
-		h.ParseItemsFromImage(image, newSplit)
-		//h.ParseItemsFromImageDummy(image, newSplit)
+		//h.ParseItemsFromImage(image, newSplit)
+		h.ParseItemsFromImageDummy(image, newSplit)
 
 		h.CreateParticipantsMap(names, newSplit)
 		newSplit.Date = splitDate
@@ -65,16 +65,20 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 		if err == nil {
 			// TODO: Update the bill cookie age limit
 			// TODO: Update the user cookie age limit and extract the user name
-			ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.BillID, math.MaxInt64, "/", "localhost", true, true)
-			ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", "localhost", true, true)
+			domain := os.Getenv("BASE_URL") // domain is "" for now
+			ctx.SetSameSite(http.SameSiteStrictMode)
+			ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.BillID, math.MaxInt64, "/", domain, false, true)
+			ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", domain, false, true)
 			ctx.JSON(http.StatusOK, common.SessionCreationSuccessResponse(*newSplit))
 			return
 		}
 
 	} else {
 		// clear the cookies and return failure
-		ctx.SetCookie(common.BILL_SESSION_ID_STR, "", -1, "/", "localhost", true, true)
-		ctx.SetCookie(common.USER_SESSION_ID_STR, "", -1, "/", "localhost", true, true)
+		domain := os.Getenv("BASE_URL")
+		ctx.SetSameSite(http.SameSiteStrictMode)
+		ctx.SetCookie(common.BILL_SESSION_ID_STR, "", -1, "/", domain, false, true)
+		ctx.SetCookie(common.USER_SESSION_ID_STR, "", -1, "/", domain, false, true)
 	}
 
 	ctx.JSON(http.StatusOK, common.SessionCreationFailureResponse())

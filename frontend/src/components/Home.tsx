@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import './Home.css';
 import BillForm from './bill-form/BillForm';
 import SplitGrid from './split-grid/SplitGrid';
-import type { BillData, ApiResponse } from '../common/interfaces';
+import { type BillData, type ApiResponse } from '../common/interfaces';
+import { URLProvider } from '../common/urlProvider';
 
 const Home: React.FC = () => {
     const [billData, setBillData] = useState<BillData | null>(null);
@@ -16,7 +16,7 @@ const Home: React.FC = () => {
 
             setIsLoading(true);
             try {
-                const apiUrl = import.meta.env.VITE_BACKEND_URL;
+                const apiUrl = URLProvider.getHomeUrl();
                 if (!apiUrl) {
                     console.error("Backend URL not found");
                     return;

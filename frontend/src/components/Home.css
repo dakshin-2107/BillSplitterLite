@@ -84,3 +84,52 @@
         width: calc(100% - 2rem);
     }
 }
+
+/* Status Card for Joining */
+.status-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 3rem;
+    text-align: center;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+}
+
+.status-card h2 {
+    margin: 0 0 1rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.status-card p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.status-card.error {
+    border-color: rgba(255, 77, 77, 0.5);
+    background: rgba(255, 77, 77, 0.1);
+}
+
+.btn-primary {
+    background: #fff;
+    color: #4b6cb7;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
