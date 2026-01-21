@@ -53,8 +53,8 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 		newSplit := h.ModelHelper.CreateNewSplit()
 		newSplit.CreatedAt = time.Now()
 		newSplit.LastUpdated = time.Now()
-		//h.ParseItemsFromImage(image, newSplit)
-		h.ParseItemsFromImageDummy(image, newSplit)
+		h.ParseItemsFromImage(image, newSplit)
+		//h.ParseItemsFromImageDummy(image, newSplit)
 
 		h.CreateParticipantsMap(names, newSplit)
 		newSplit.Date = splitDate

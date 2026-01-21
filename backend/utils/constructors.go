@@ -16,16 +16,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var allowedOrigins = []string{
+	"http://localhost:5173",
+	"http://localhost:5174",
+	"http://192.168.0.169:5173",
+	"http://192.168.0.169:5174",
+	"https://splitzo.dak-shin.com",
+}
+
 func CreateGinEngine(logger logger.ILogger) *gin.Engine {
 	logger.DebugLog("Instantiated gin engine")
 	r := gin.New()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174", "http://192.168.0.169:5173", "http://192.168.0.169:5174"},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true, // Required to receive cookies from a CORS request.
+		AllowCredentials: true,
 	}))
 
 	return r
@@ -86,7 +94,13 @@ func NewConnUpgrader() *websocket.Upgrader {
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			return true
+			origin := r.Header.Get("Origin")
+			for _, allowed := range allowedOrigins {
+				if origin == allowed {
+					return true
+				}
+			}
+			return false
 		},
 	}
 }
