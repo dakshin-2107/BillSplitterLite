@@ -106,6 +106,28 @@ export function processAction(action: IAction, splitData: SplitData | null): Spl
             break;
         }
 
+        case ActionType.ADD_ALL_TAKERS_FOR_ITEM: {
+            const bill = getBill(action.billId);
+            if (action.billId !== undefined && bill && bill.items[action.itemId]) {
+                const item = bill.items[action.itemId];
+                const newTakers = { ...item.takers };
+
+                // Add all participants with at least 1 share
+                Object.keys(newSplitData.participants).forEach(takerId => {
+                    if (!newTakers[takerId]) {
+                        newTakers[takerId] = 1;
+                    }
+                });
+
+                const newItems = {
+                    ...bill.items,
+                    [action.itemId]: { ...item, takers: newTakers }
+                };
+                updateBill(action.billId, { ...bill, items: newItems });
+            }
+            break;
+        }
+
         case ActionType.ADD_NEW_TAKER:
             if (action.takerId) {
                 newSplitData.participants[action.takerId] = action.itemName || action.takerId;
@@ -128,14 +150,12 @@ export function processAction(action: IAction, splitData: SplitData | null): Spl
             break;
 
         case ActionType.BYE_BYE:
-            {
-                fetch(URLProvider.getCloseUrl(), {
-                    method: 'GET',
-                    credentials: 'include'
-                }).finally(() => {
-                    window.location.href = '/';
-                });
-            }
+            fetch(URLProvider.getCloseUrl(), {
+                method: 'GET',
+                credentials: 'include'
+            }).finally(() => {
+                window.location.href = '/';
+            });
             break;
     }
 

@@ -258,3 +258,20 @@ func (r *RedisDatabaseConnection) UpdateBillInformation(splitId string, billId i
 	// Update date
 	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, billPath+".date", fmt.Sprintf("\"%s\"", newDate)).Err()
 }
+
+func (r *RedisDatabaseConnection) AddAllTakersToItem(splitId string, billId int, itemId int) error {
+	split, err := r.GetSplit(splitId)
+	if err != nil {
+		return err
+	}
+
+	for takerId := range split.Participants {
+		path := fmt.Sprintf("$.bills.%d.items.%d.takers.%s", billId, itemId, takerId)
+		// Set taker with 1 share if they don't exist
+		err = r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, 1).Err()
+		if err != nil {
+			r.logger.InfoLog(fmt.Sprintf("Error adding taker %s to item: %v", takerId, err))
+		}
+	}
+	return nil
+}

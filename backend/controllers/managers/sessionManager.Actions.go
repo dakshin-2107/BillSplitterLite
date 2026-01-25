@@ -27,10 +27,12 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 
 		case common.BYE_BYE:
 			s.logger.DebugLog("Bye Bye")
-			s.SessionDict[splitID].BroadcastChannel <- common.SplitDeleteResponse()
-			s.SessionDict[splitID].SignalChannel <- action
-			s.ModelHelper.DeleteSplitIfExists(splitID)
-			return nil
+			err = s.ModelHelper.DeleteSplitIfExists(splitID)
+			if err == nil {
+				s.SessionDict[splitID].BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
+				s.SessionDict[splitID].SignalChannel <- action
+				return nil
+			}
 
 		case common.SYNC_BILL_STATE:
 			s.logger.DebugLog("Sync Bill State")
@@ -69,6 +71,10 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 		case common.DELETE_TAKER_FOR_ITEM:
 			s.logger.DebugLog(fmt.Sprintf("removing taker(takerId: %v) for item(itemId : %v) in bill(billId: %v)", action.TakerId, action.ItemId, action.BillId))
 			err = s.ModelHelper.DeleteTakerForItem(splitID, action.BillId, action.ItemId, action.TakerId)
+
+		case common.ADD_ALL_TAKERS_FOR_ITEM:
+			s.logger.DebugLog(fmt.Sprintf("adding all participants to item(itemId : %v) in bill(billId: %v)", action.ItemId, action.BillId))
+			err = s.ModelHelper.AddAllTakersToItem(splitID, action.BillId, action.ItemId)
 
 		case common.INCREMENT_TAKER_ID:
 			s.logger.DebugLog(fmt.Sprintf("incrementing taker(takerID: %v)", action.TakerId))

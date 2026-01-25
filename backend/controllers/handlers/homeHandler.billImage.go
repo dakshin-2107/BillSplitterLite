@@ -88,6 +88,36 @@ const SAMPLE_JSON_STRING string = `{
 					"takers": {}
 				}
 			}
+		}
+	}
+}`
+
+const SAMPLE_JSON_STRING2 string = `{
+	"totalAmount": 450.75,
+	"participants": {
+		"Dakshin": "Dakshin",
+		"Kevin": "Kevin",
+		"Angela": "Angela"
+	},
+	"bills": {
+		"1": {
+			"billId": 1,
+			"total": 250.00,
+			"itemIdCounter": 3,
+			"items": {
+				"1": {
+					"id": 1,
+					"name": "Indian Grill Ckn Half",
+					"price": 200.00,
+					"takers": {}
+				},
+				"2": {
+					"id": 2,
+					"name": "Biriyani Rice Half",
+					"price": 50.00,
+					"takers": {}
+				}
+			}
 		},
 		"2": {
 			"billId": 2,

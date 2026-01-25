@@ -86,24 +86,29 @@
     border-radius: 4px;
 }
 
-.btn-add-taker-inline {
-    background: rgba(167, 139, 250, 0.05);
-    border: 1px dashed rgba(167, 139, 250, 0.3);
-    color: #a78bfa;
-    padding: 4px 16px;
+.btn-add-taker-inline,
+.btn-add-all-takers-inline {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 6px 12px;
     border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
     transition: all 0.2s;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    white-space: nowrap;
 }
 
-.btn-add-taker-inline:hover {
-    border-style: solid;
-    border-color: #a78bfa;
-    background: rgba(167, 139, 250, 0.15);
+.btn-add-taker-inline:hover,
+.btn-add-all-takers-inline:hover {
+    background: rgba(100, 181, 246, 0.1);
+    border-color: #64b5f6;
+    color: #64b5f6;
+}
+
+.taker-cell-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }

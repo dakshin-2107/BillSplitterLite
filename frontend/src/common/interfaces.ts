@@ -82,8 +82,11 @@ export const ActionType = {
     // edit bill information
     EDIT_BILL_INFO: 13,
 
+    // add all participants to an item
+    ADD_ALL_TAKERS_FOR_ITEM: 14,
+
     // close the session and delete all the data associated with it
-    BYE_BYE: 14
+    BYE_BYE: 15
 } as const;
 
 export type ActionType = typeof ActionType[keyof typeof ActionType];

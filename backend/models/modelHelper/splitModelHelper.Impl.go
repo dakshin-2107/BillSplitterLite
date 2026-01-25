@@ -81,6 +81,10 @@ func (sp *SplitModelHelper) DeleteTakerForItem(splitId string, billId int, itemI
 	return sp.db.DeleteTakerForItem(splitId, billId, itemId, takerId)
 }
 
+func (sp *SplitModelHelper) AddAllTakersToItem(splitId string, billId int, itemId int) error {
+	return sp.db.AddAllTakersToItem(splitId, billId, itemId)
+}
+
 // Creation helpers
 func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
 	return &common.Split{

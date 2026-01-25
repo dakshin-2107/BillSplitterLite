@@ -38,6 +38,9 @@ const (
 	// edit bill information - actual bill total for now
 	EDIT_BILL_INFORMATION
 
+	// add all participants to an item
+	ADD_ALL_TAKERS_FOR_ITEM
+
 	// close the session and delete all the data associated with it
 	BYE_BYE
 )

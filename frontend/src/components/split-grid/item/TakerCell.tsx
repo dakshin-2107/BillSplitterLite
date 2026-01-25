@@ -44,6 +44,16 @@ const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, billId,
         onAddTakerClick(itemId, itemName, billId);
     }
 
+    const handleAddAllTakers = () => {
+        if (socketContext) {
+            socketContext.publishAction({
+                actionType: ActionType.ADD_ALL_TAKERS_FOR_ITEM,
+                billId: billId,
+                itemId: itemId
+            });
+        }
+    }
+
     return (
         <div className="taker-cell">
             <div className="takers-list">
@@ -57,9 +67,14 @@ const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, billId,
                         <button className="pill-btn plus" onClick={() => handleAddTakerShare(takerId)}>+</button>
                     </div>
                 ))}
-                <button className="btn-add-taker-inline" onClick={() => handleAddTaker()}>
-                    + Add
-                </button>
+                <div className="taker-cell-actions">
+                    <button className="btn-add-taker-inline" onClick={() => handleAddTaker()} title="Add a specific person">
+                        + Add
+                    </button>
+                    <button className="btn-add-all-takers-inline" onClick={() => handleAddAllTakers()} title="Add everyone in the split">
+                        + All
+                    </button>
+                </div>
             </div>
         </div>
     );
