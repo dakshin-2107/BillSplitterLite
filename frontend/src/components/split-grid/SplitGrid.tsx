@@ -1,6 +1,6 @@
 import './SplitGrid.css';
 import React from 'react';
-import type { BillData } from '../../common/interfaces';
+import type { SplitData } from '../../common/interfaces';
 import TakerCell from './item/TakerCell';
 import TakersPanel from './people-panel/TakersPanel';
 import ItemPopup from './item/ItemPopup';
@@ -13,14 +13,14 @@ import BillDebugger from '../debug/BillDebugger';
 import BillActions from './bill-actions/BillActions';
 
 interface SplitGridProps {
-    billData: BillData;
-    setBillData: React.Dispatch<React.SetStateAction<BillData | null>>;
+    splitData: SplitData;
+    setSplitData: React.Dispatch<React.SetStateAction<SplitData | null>>;
 }
 
-const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
+const SplitGrid: React.FC<SplitGridProps> = ({ splitData, setSplitData }) => {
 
     const [tally, setTally] = React.useState<Tally | null>(null);
-    const [activeItem, setActiveItem] = React.useState<{ id: string, name: string } | null>(null);
+    const [activeItem, setActiveItem] = React.useState<{ id: number, name: string, billId: number } | null>(null);
     const [isAddItemPopupOpen, setIsAddItemPopupOpen] = React.useState(false);
 
     React.useEffect(() => {
@@ -43,13 +43,22 @@ const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [activeItem]);
 
-    const handleAddTakerClick = (itemId: string, itemName: string) => {
-        setActiveItem({ id: itemId, name: itemName });
+    const handleAddTakerClick = (itemId: number, itemName: string, billId: number) => {
+        setActiveItem({ id: itemId, name: itemName, billId });
     };
 
+    // Aggregate all items from all bills
+    const allItems = Object.entries(splitData.bills).flatMap(([billId, bill]) =>
+        Object.values(bill.items).map(item => ({ ...item, billId: Number(billId) }))
+    );
+
+    // Get the first bill ID for adding new items (default)
+    const billsKeys = Object.keys(splitData.bills);
+    const firstBillId = billsKeys.length > 0 ? Number(billsKeys[0]) : 0;
+
     return (
-        <SocketContextComponent setBillData={setBillData} setTallyData={setTally}>
-            {billData && (
+        <SocketContextComponent setSplitData={setSplitData} setTallyData={setTally}>
+            {splitData && (
                 <div className="split-grid-container">
                     <div className="split-grid-header">
                         <h1 className="split-grid-title">Split the bill</h1>
@@ -57,7 +66,7 @@ const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
                     </div>
 
                     <TakersPanel
-                        participants={billData.participants}
+                        participants={splitData.participants}
                         activeItem={activeItem}
                     />
 
@@ -75,26 +84,43 @@ const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.values(billData.items).map((item, index) => (
-                                            <tr key={item.id || index}>
-                                                <td>
-                                                    <ItemActionCell
-                                                        item={item}
-                                                    />
-                                                </td>
-                                                <td>{index + 1}</td>
-                                                <td>{item.name}</td>
-                                                <td>{item.price.toFixed(2)}</td>
-                                                <td className="takers-cell">
-                                                    <TakerCell
-                                                        takers={item.takers}
-                                                        itemId={item.id}
-                                                        itemName={item.name}
-                                                        onAddTakerClick={handleAddTakerClick}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {Object.entries(splitData.bills).map(([billIdStr, bill]) => {
+                                            const billId = Number(billIdStr);
+                                            return (
+                                                <React.Fragment key={billId}>
+                                                    <tr className="bill-header-row">
+                                                        <td colSpan={5}>
+                                                            <div className="bill-header-content">
+                                                                <span className="bill-location-tag">{bill.location}</span>
+                                                                <span className="bill-date-tag">{bill.date}</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    {Object.values(bill.items).map((item, itemIndex) => (
+                                                        <tr key={`${billId}-${item.id || itemIndex}`}>
+                                                            <td>
+                                                                <ItemActionCell
+                                                                    item={item}
+                                                                    billId={billId}
+                                                                />
+                                                            </td>
+                                                            <td>{itemIndex + 1}</td>
+                                                            <td>{item.name}</td>
+                                                            <td>{item.price.toFixed(2)}</td>
+                                                            <td className="takers-cell">
+                                                                <TakerCell
+                                                                    takers={item.takers}
+                                                                    itemId={item.id}
+                                                                    itemName={item.name}
+                                                                    billId={billId}
+                                                                    onAddTakerClick={handleAddTakerClick}
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </React.Fragment>
+                                            )
+                                        })}
                                     </tbody>
                                 </table>
                                 <div className="grid-controls">
@@ -112,21 +138,18 @@ const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
                                 {isAddItemPopupOpen && (
                                     <ItemPopup
                                         onClose={() => setIsAddItemPopupOpen(false)}
-                                        newItemId={Object.values(billData.items).length + 1}
+                                        newItemId={allItems.length + 1}
+                                        billId={firstBillId}
                                     />
                                 )}
-
-                                {/* Debugger to visualize state updates */}
-                                {/*<BillDebugger billData={billData} />*/}
-                                {/*<LastMessage />*/}
                             </div>
                         </div>
 
                         <div className="tally-section">
                             <TallyPanel
                                 tally={tally}
-                                participants={billData.participants}
-                                billData={billData}
+                                participants={splitData.participants}
+                                splitData={splitData}
                             />
                         </div>
                     </div>
@@ -135,5 +158,6 @@ const SplitGrid: React.FC<SplitGridProps> = ({ billData, setBillData }) => {
         </SocketContextComponent>
     )
 }
+
 
 export default SplitGrid;

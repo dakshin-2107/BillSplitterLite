@@ -201,3 +201,29 @@
     background: #ef4444;
     color: white;
 }
+
+/* Bill Group Headers */
+.bill-header-row td {
+    background: rgba(167, 139, 250, 0.05) !important;
+    color: #a78bfa;
+    border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+    padding: 0.75rem 1.5rem !important;
+}
+
+.bill-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.bill-location-tag {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.bill-date-tag {
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0.8;
+}

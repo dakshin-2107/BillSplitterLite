@@ -56,7 +56,7 @@ const BillActions: React.FC = () => {
         if (socketContext) {
             socketContext.publishAction({
                 actionType: ActionType.BYE_BYE,
-                itemId: "0" // dummy itemId for session closing
+                itemId: 0 // dummy itemId for session closing
             });
         }
         setShowConfirmModal(false);

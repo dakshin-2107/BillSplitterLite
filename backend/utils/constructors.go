@@ -10,7 +10,6 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
 	"github.com/dakshin-2107/BillSplitterLite/backend/models/database"
 	"github.com/dakshin-2107/BillSplitterLite/backend/models/modelHelper"
-	"github.com/dakshin-2107/BillSplitterLite/backend/routes"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -74,8 +73,8 @@ func NewHandler[T any]() common.IRouteHandlerBase {
 	return handler
 }
 
-func NewRouteCreater(logger logger.ILogger, modelHelper common.ISplitModelHelper, r *gin.Engine, sessionManager common.ISessionManager, routesList ...common.IRouteHandlerBase) routes.IRouteCreator {
-	rc := new(routes.RouteCreator)
+func NewRouteCreater(logger logger.ILogger, modelHelper common.ISplitModelHelper, r *gin.Engine, sessionManager common.ISessionManager, routesList ...common.IRouteHandlerBase) IRouteCreator {
+	rc := new(RouteCreator)
 	logger.DebugLog("Instantiated route creator")
 
 	rc.Init(logger, r, modelHelper, sessionManager, routesList...)
@@ -105,7 +104,7 @@ func NewConnUpgrader() *websocket.Upgrader {
 	}
 }
 
-func StartApp(r *gin.Engine, logger logger.ILogger, rc routes.IRouteCreator, db common.IDatabase) {
+func StartApp(r *gin.Engine, logger logger.ILogger, rc IRouteCreator, db common.IDatabase) {
 	logger.DebugLog("Starting the app")
 
 	if !db.IsConnected() {

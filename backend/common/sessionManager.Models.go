@@ -65,14 +65,55 @@ type IPublisher interface {
 	PublishAction(action IAction) error
 }
 
+/*
+Example tally JSON
+{
+	userShares: {
+		Kevin : {
+			billShares : {
+				"1" : {
+					itemShares : {
+						"1" : 100.00,
+						"2" : 200.00
+					},
+					billShareTotal : 300.00
+				},
+				"2" : {
+					itemShares : {
+						"1" : 150.00,
+						"2" : 200.00
+					},
+					billShareTotal : 350.00
+				}
+			},
+			userShareTotal : 650.00
+		}
+	},
+	billNameMap: {
+		"1" : "Poor richards - 1st Jan, 2025",
+		"2" : "Pizza by alfredo's - 25th Dec, 2025"
+	},
+	actualTotal: 1000.00,
+	calculatedTotal: 1000.00,
+	totalDifference: 0.00
+}
+
+*/
+
 type Tally struct {
 	UserShares      map[string]UserShare `json:"userShares"`
+	BillNameMap     map[int]string       `json:"billNameMap"`
 	ActualTotal     float32              `json:"actualTotal"`
 	CalculatedTotal float32              `json:"calculatedTotal"`
 	TotalDifference float32              `json:"totalDifference"`
 }
 
 type UserShare struct {
-	Shares         map[string]float32 `json:"shares"`
-	UserShareTotal float32            `json:"userShareTotal"`
+	BillShares     map[int]BillShare `json:"billShares"`
+	UserShareTotal float32           `json:"userShareTotal"`
+}
+
+type BillShare struct {
+	ItemShares     map[string]float32 `json:"itemShares"`
+	BillShareTotal float32            `json:"billShareTotal"`
 }

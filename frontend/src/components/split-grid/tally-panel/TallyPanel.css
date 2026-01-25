@@ -107,7 +107,77 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 16px;
+    gap: 12px;
 }
+
+.view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Toggle Switch Styling */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .4s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #64b5f6;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: rgba(100, 181, 246, 0.2);
+    border-color: rgba(100, 181, 246, 0.4);
+}
+
+input:checked + .slider:before {
+    transform: translateX(14px);
+    background-color: #90caf9;
+}
+
+.slider.round {
+    border-radius: 20px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
 
 .split-label {
     font-size: 0.8rem;
@@ -179,6 +249,34 @@
 .item-amount {
     font-family: monospace;
 }
+
+.bill-shares-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bill-share-group {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+}
+
+.bill-name-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.bill-name {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.bill-share-total {
+    color: rgba(255, 255, 255, 0.9);
+}
+
 
 /* Inline Editor Styles */
 .summary-item.actual {

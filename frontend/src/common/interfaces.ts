@@ -2,14 +2,33 @@ import { ReadyState } from "react-use-websocket";
 
 // split grid stuff
 export interface Item {
-    id: string;
+    id: number;
     name: string;
     price: number;
     takers: Record<string, number>;
 }
 
-export interface BillData {
+export interface BillFormData {
+    location: string;
+    date: string;
+    image: File;
+}
+
+export interface SplitFormData {
+    billData: BillFormData[];
+    peopleList: string[];
+}
+
+export interface SplitData {
     splitId: string;
+    totalAmount: number;
+    bills: Record<string, BillData>;
+    itemIdCounter: number;
+    participants: Record<string, string>;
+}
+
+export interface BillData {
+    billId: number;
     date: string;
     location: string;
     total: number;
@@ -29,7 +48,7 @@ export interface FormData {
 export interface ApiResponse {
     success: boolean;
     message: string;
-    bill?: BillData;
+    split?: SplitData;
 }
 
 export const ActionType = {
@@ -73,11 +92,14 @@ export interface IAction {
     actionId?: number;
     actionType: ActionType;
     splitId?: string;
-    itemId: string;
+    billId?: number;
+    itemId: number;
     itemName?: string;
     takerId?: string;
     price?: number;
     total?: number;
+    location?: string;
+    date?: string;
 }
 
 export interface ActionResponse {
@@ -95,14 +117,20 @@ export interface SocketProvider {
 
 export interface Tally {
     userShares: Record<string, UserShare>;
+    billNameMap: Record<number, string>;
     actualTotal: number;
     calculatedTotal: number;
     totalDifference: number;
 }
 
 export interface UserShare {
-    shares: Record<string, number>;
+    billShares: Record<number, BillShare>;
     userShareTotal: number;
+}
+
+export interface BillShare {
+    itemShares: Record<string, number>;
+    billShareTotal: number;
 }
 
 export interface TallyResponse {

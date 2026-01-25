@@ -1,14 +1,12 @@
 package modelHelper
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
 )
 
-// TODO: Add all domain specific validations before the DB is called
 type SplitModelHelper struct {
 	db     common.IDatabase
 	logger logger.ILogger
@@ -23,71 +21,75 @@ func (sp *SplitModelHelper) Init(db common.IDatabase, logger logger.ILogger) {
 	sp.logger = logger
 }
 
-// Bill methods
-func (sp *SplitModelHelper) AddBillIfNotExists(split *common.Split) error {
-	return sp.db.AddBillIfNotExists(split)
+// Split management
+func (sp *SplitModelHelper) GetSplit(splitId string) (*common.Split, error) {
+	return sp.db.GetSplit(splitId)
 }
 
-func (sp *SplitModelHelper) DeleteBillIfExists(splitId string) error {
-	return sp.db.DeleteBillIfExists(splitId)
+func (sp *SplitModelHelper) AddSplitIfNotExists(split *common.Split) error {
+	return sp.db.AddSplitIfNotExists(split)
 }
 
-func (sp *SplitModelHelper) UpdateBillMetaData(splitId string, newSplit common.Split) error {
-	return sp.db.UpdateBillMetaData(splitId, newSplit)
+func (sp *SplitModelHelper) DeleteSplitIfExists(splitId string) error {
+	return sp.db.DeleteSplitIfExists(splitId)
 }
 
-// Bill item methods
-func (sp *SplitModelHelper) AddBillItem(splitId string, item common.Item) error {
-	sp.logger.DebugLog(fmt.Sprintf("Adding item(ID : %v) for split(ID : %v)", item.Id, splitId))
-	return sp.db.AddBillItem(splitId, item)
+func (sp *SplitModelHelper) GetNewBillId(splitId string) int {
+	return sp.db.GetNewBillId(splitId)
 }
 
-func (sp *SplitModelHelper) DeleteBillItem(splitId string, itemId string) error {
-	sp.logger.DebugLog(fmt.Sprintf("Deleting item(ID : %v) for split(ID : %v)", itemId, splitId))
-	return sp.db.DeleteBillItem(splitId, itemId)
+// Taker management
+func (sp *SplitModelHelper) AddNewTakerToSplit(splitId string, takerId string, takerName string) error {
+	return sp.db.AddNewTakerToSplit(splitId, takerId, takerName)
 }
 
-func (sp *SplitModelHelper) AddItemTaker(splitId string, itemId string, takerId string) error {
-	sp.logger.DebugLog(fmt.Sprintf("Adding item taker(ID : %v) for item(ID : %v) for split(ID : %v)", takerId, itemId, splitId))
-	return sp.db.AddItemTaker(splitId, itemId, takerId)
+func (sp *SplitModelHelper) DeleteTakerFromSplit(splitId string, takerId string) error {
+	return sp.db.DeleteTakerFromSplit(splitId, takerId)
 }
 
-func (sp *SplitModelHelper) DeleteItemTaker(splitId string, itemId string, takerId string) error {
-	sp.logger.DebugLog(fmt.Sprintf("Removing item taker(ID : %v) for item(ID: %v) for split(ID : %v)", takerId, itemId, splitId))
-	return sp.db.DeleteItemTaker(splitId, itemId, takerId)
+// Bill management
+func (sp *SplitModelHelper) AddBillToSplit(splitId string, bill common.Bill) error {
+	return sp.db.AddBillToSplit(splitId, bill)
 }
 
-func (sp *SplitModelHelper) AddTakerID(splitId string, takerId string, takerName string) error {
-	sp.logger.DebugLog(fmt.Sprintf("Adding pariticpant(ID: %v) for split(ID: %v)", takerId, splitId))
-	return sp.db.AddTakerID(splitId, takerId, takerName)
+func (sp *SplitModelHelper) DeleteBillFromSplit(splitId string, billId int) error {
+	return sp.db.DeleteBillFromSplit(splitId, billId)
 }
 
-func (sp *SplitModelHelper) DeleteTakerID(splitId string, takerId string) error {
-	sp.logger.DebugLog(fmt.Sprintf("Removing pariticpant(ID: %v) for for split(ID: %v)", takerId, splitId))
-	return sp.db.DeleteTakerID(splitId, takerId)
+func (sp *SplitModelHelper) UpdateBillInformation(splitId string, billId int, newTotal float32, newLocation string, newDate string) error {
+	return sp.db.UpdateBillInformation(splitId, billId, newTotal, newLocation, newDate)
 }
 
-func (sp *SplitModelHelper) GetNewItemId(splitID string) string {
-	return sp.db.GetNewItemId(splitID)
+// Item management
+func (sp *SplitModelHelper) GetNewItemId(splitId string, billId int) int {
+	return sp.db.GetNewItemId(splitId, billId)
 }
 
-func (sp *SplitModelHelper) GetBill(billId string) (*common.Split, error) {
-	return sp.db.GetBill(billId)
+func (sp *SplitModelHelper) AddItemToBill(splitId string, billId int, item common.Item) error {
+	return sp.db.AddItemToBill(splitId, billId, item)
 }
 
-func (sp *SplitModelHelper) UpdateBillInformation(splitId string, newTotal float32) error {
-	return sp.db.UpdateBillInformation(splitId, newTotal)
+func (sp *SplitModelHelper) DeleteItemFromBill(splitId string, billId int, itemId int) error {
+	return sp.db.DeleteItemFromBill(splitId, billId, itemId)
 }
 
+func (sp *SplitModelHelper) AddNewTakerForItem(splitId string, billId int, itemId int, takerId string) error {
+	return sp.db.AddNewTakerForItem(splitId, billId, itemId, takerId)
+}
+
+func (sp *SplitModelHelper) DeleteTakerForItem(splitId string, billId int, itemId int, takerId string) error {
+	return sp.db.DeleteTakerForItem(splitId, billId, itemId, takerId)
+}
+
+// Creation helpers
 func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
 	return &common.Split{
-		BillID:       "",
-		Items:        make(map[string]common.Item),
-		TotalAmount:  0.0,
-		Participants: make(map[string]string),
-		Location:     "",
-		Date:         time.Now().String(),
-		CreatedAt:    time.Now(),
-		LastUpdated:  time.Now(),
+		SplitID:       "",
+		Bills:         make(map[int]common.Bill),
+		TotalAmount:   0.0,
+		Participants:  make(map[string]string),
+		BillIdCounter: 0,
+		CreatedAt:     time.Now(),
+		LastUpdated:   time.Now(),
 	}
 }

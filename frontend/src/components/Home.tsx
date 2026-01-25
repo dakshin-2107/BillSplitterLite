@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import './Home.css';
-import BillForm from './bill-form/BillForm';
+import './components.css';
+import SplitForm from './split-form/SplitForm';
 import SplitGrid from './split-grid/SplitGrid';
-import { type BillData, type ApiResponse } from '../common/interfaces';
+import { type SplitData, type ApiResponse } from '../common/interfaces';
 import { URLProvider } from '../common/urlProvider';
 
 const Home: React.FC = () => {
-    const [billData, setBillData] = useState<BillData | null>(null);
+    const [splitData, setSplitData] = useState<SplitData | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -33,8 +33,8 @@ const Home: React.FC = () => {
 
                 const result: ApiResponse = await response.json();
 
-                if (result.success && result.bill) {
-                    setBillData(result.bill);
+                if (result.success && result.split) {
+                    setSplitData(result.split);
                 } else {
                     console.error("Failed to restore session:", result.message);
                 }
@@ -49,31 +49,22 @@ const Home: React.FC = () => {
     }, []);
 
     // Handle successful form submission
-    const handleFormSuccess = (billdata: BillData) => {
-        setBillData(billdata);
+    const handleFormSuccess = (data: SplitData) => {
+        setSplitData(data);
         setError(null);
     };
 
     // Handle form submission error
     const handleFormError = (errorMessage: string) => {
         setError(errorMessage);
-        setBillData(null);
+        setSplitData(null);
     };
 
-    // // Handle going back to form from SplitGrid
-    // const handleBackToForm = () => {
-    //     setBillData(null);
-    //     setError(null);
-    // };
-
-    // If we have bill data, show the SplitGrid
-    if (billData) {
+    // If we have split data, show the SplitGrid
+    if (splitData) {
         return (
             <div className="home-container">
-                {/* <button onClick={handleBackToForm} className="btn-back">
-                    ← Back to Form
-                </button> */}
-                <SplitGrid billData={billData} setBillData={setBillData} />
+                <SplitGrid splitData={splitData} setSplitData={setSplitData} />
             </div>
         );
     }
@@ -91,7 +82,7 @@ const Home: React.FC = () => {
                     <p>{error}</p>
                 </div>
             )}
-            <BillForm
+            <SplitForm
                 onSubmitSuccess={handleFormSuccess}
                 onSubmitError={handleFormError}
             />
@@ -100,3 +91,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+

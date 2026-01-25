@@ -6,7 +6,7 @@ import { SocketContextProvider } from '../action-manager/SocketContext';
 
 interface TakersPanelProps {
     participants: Record<string, string>;
-    activeItem: { id: string, name: string } | null;
+    activeItem: { id: number, name: string, billId: number } | null;
 }
 
 const TakersPanel: React.FC<TakersPanelProps> = ({ participants, activeItem }) => {
@@ -18,12 +18,9 @@ const TakersPanel: React.FC<TakersPanelProps> = ({ participants, activeItem }) =
             const action: IAction = {
                 actionId: 0,
                 actionType: ActionType.ADD_TAKER_FOR_ITEM,
-                splitId: activeItem.id,
+                billId: activeItem.billId,
                 itemId: activeItem.id,
-                itemName: activeItem.name,
-                takerId: id,
-                price: 0,
-                total: 0
+                takerId: id
             }
 
             if (SocketContext) {

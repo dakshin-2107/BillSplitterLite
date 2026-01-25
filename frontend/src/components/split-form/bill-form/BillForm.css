@@ -1,0 +1,114 @@
+.bill-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #1E1E1E;
+    /* Surface/Card */
+    border-radius: 12px;
+    border: 1px solid #333;
+    color: #FFFFFF;
+    /* Primary Text */
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-group label {
+    font-size: 1rem;
+    min-width: 100px;
+    color: #FFFFFF;
+}
+
+.form-group input {
+    flex: 1;
+    border-radius: 4px;
+    border: 1px solid #333;
+    background: #121212;
+    /* Primary Background for inputs */
+    color: #FFFFFF;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #BB86FC;
+}
+
+.bill-image-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.bill-image-group label {
+    min-width: 100px;
+    margin-top: 0.5rem;
+}
+
+.upload-container {
+    flex: 1;
+    height: 450px;
+    /* Increased height as requested */
+    border: 2px dashed #444;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #121212;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.upload-container:hover {
+    border-color: #BB86FC;
+    background: #1a1a1a;
+}
+
+.plus-icon {
+    font-size: 3.5rem;
+    color: #6e6e6e;
+    line-height: 1;
+}
+
+.upload-text {
+    font-size: 1rem;
+    color: #A0A0A0;
+    /* Secondary Text */
+    margin: 0;
+}
+
+.image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-input {
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
+    padding-left: 110px;
+    /* Align with inputs */
+}
+
+/* Button styles and fonts moved to SplitForm.css */

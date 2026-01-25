@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './Home.css'; // Reuse container styles
+import './components.css'; // Reuse container styles
 import { URLProvider } from '../common/urlProvider';
 
 const JoinSession: React.FC = () => {

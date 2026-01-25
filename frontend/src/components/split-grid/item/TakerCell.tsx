@@ -6,12 +6,13 @@ import './TakerCell.css';
 
 interface TakerCellProps {
     takers: { [key: string]: number };
-    itemId: string;
+    itemId: number;
     itemName: string;
-    onAddTakerClick: (itemId: string, itemName: string) => void;
+    billId: number;
+    onAddTakerClick: (itemId: number, itemName: string, billId: number) => void;
 }
 
-const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, onAddTakerClick }) => {
+const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, billId, onAddTakerClick }) => {
     const socketContext = useContext(SocketContextProvider);
 
     // to add a taker's share to the item
@@ -19,6 +20,7 @@ const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, onAddTa
         if (socketContext) {
             socketContext.publishAction({
                 actionType: ActionType.ADD_TAKER_FOR_ITEM,
+                billId: billId,
                 itemId: itemId,
                 takerId: takerId
             });
@@ -30,6 +32,7 @@ const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, onAddTa
         if (socketContext) {
             socketContext.publishAction({
                 actionType: ActionType.DELETE_TAKER_FOR_ITEM,
+                billId: billId,
                 itemId: itemId,
                 takerId: takerId
             });
@@ -38,13 +41,13 @@ const TakerCell: React.FC<TakerCellProps> = ({ takers, itemId, itemName, onAddTa
 
     // to add a new taker to the item
     const handleAddTaker = () => {
-        onAddTakerClick(itemId, itemName);
+        onAddTakerClick(itemId, itemName, billId);
     }
 
     return (
         <div className="taker-cell">
             <div className="takers-list">
-                {Object.entries(takers).filter(([takerId, count]) => count >= 1).map(([takerId, count]) => (
+                {Object.entries(takers).filter(([, count]) => count >= 1).map(([takerId, count]) => (
                     <div key={takerId} className="taker-pill">
                         <button className="pill-btn minus" onClick={() => handleRemoveTakerShare(takerId)}>−</button>
                         <div className="pill-content">

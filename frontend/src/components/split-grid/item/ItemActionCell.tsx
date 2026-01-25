@@ -7,15 +7,17 @@ import { ActionType } from '../../../common/interfaces';
 
 interface ItemActionCellProps {
     item: Item;
+    billId: number;
 }
 
-const ItemActionCell: React.FC<ItemActionCellProps> = ({ item }) => {
+const ItemActionCell: React.FC<ItemActionCellProps> = ({ item, billId }) => {
     const socketContext = useContext(SocketContextProvider);
 
     const handleDelete = () => {
         if (socketContext) {
             socketContext.publishAction({
                 actionType: ActionType.DELETE_ITEM,
+                billId: billId,
                 itemId: item.id
             });
         }

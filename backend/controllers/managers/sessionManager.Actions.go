@@ -7,10 +7,15 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 )
 
-func (s *SessionManager) ExecuteAction(billID string, userID string, actionData []byte) error {
+func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData []byte) error {
 	var action Action
 	err := json.Unmarshal(actionData, &action)
 	if err == nil {
+
+		// Default BillId to 1 if not provided, for backward compatibility or initial bill
+		if action.BillId == 0 {
+			action.BillId = 1
+		}
 
 		switch action.ActionType {
 
@@ -22,47 +27,48 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 
 		case common.BYE_BYE:
 			s.logger.DebugLog("Bye Bye")
-			s.SessionDict[billID].BroadcastChannel <- common.BillDeleteResponse()
-			s.SessionDict[billID].SignalChannel <- action
-			s.ModelHelper.DeleteBillIfExists(billID)
+			s.SessionDict[splitID].BroadcastChannel <- common.SplitDeleteResponse()
+			s.SessionDict[splitID].SignalChannel <- action
+			s.ModelHelper.DeleteSplitIfExists(splitID)
 			return nil
 
 		case common.SYNC_BILL_STATE:
 			s.logger.DebugLog("Sync Bill State")
-			bill, err := s.ModelHelper.GetBill(billID)
+			split, err := s.ModelHelper.GetSplit(splitID)
 			if err != nil {
 				return err
 			}
 
-			s.SessionDict[billID].BroadcastChannel <- common.BillResponse(*bill)
+			s.SessionDict[splitID].BroadcastChannel <- common.SplitResponse(*split)
 
 		// item cases
 		case common.ADD_NEW_ITEM:
 			newItem := common.Item{
-				Id:     s.ModelHelper.GetNewItemId(billID),
+				Id:     s.ModelHelper.GetNewItemId(splitID, action.BillId),
 				Name:   action.ItemName,
 				Price:  action.Price,
-				Takers: make(map[string]int, 0),
+				Takers: make(map[string]int),
 			}
 
-			s.logger.DebugLog(fmt.Sprintf("adding item(itemID: %v)", action.ItemId))
-			err = s.ModelHelper.AddBillItem(billID, newItem)
+			s.logger.DebugLog(fmt.Sprintf("adding item(itemID: %v) to bill(billID: %v) in split(splitID: %v)", newItem.Id, action.BillId, splitID))
+			err = s.ModelHelper.AddItemToBill(splitID, action.BillId, newItem)
 
 		case common.DELETE_ITEM:
-			s.logger.DebugLog(fmt.Sprintf("removing item(itemID: %v)", action.ItemId))
-			err = s.ModelHelper.DeleteBillItem(billID, action.ItemId)
+			s.logger.DebugLog(fmt.Sprintf("removing item(itemID: %v) from bill(billID: %v)", action.ItemId, action.BillId))
+			err = s.ModelHelper.DeleteItemFromBill(splitID, action.BillId, action.ItemId)
 
 		case common.EDIT_ITEM:
 			s.logger.DebugLog(fmt.Sprintf("editing item(itemID: %v)", action.ItemId))
+			// TODO: Implement EditItem in ModelHelper if needed
 
 		// item's taker cases
 		case common.ADD_TAKER_FOR_ITEM:
-			s.logger.DebugLog(fmt.Sprintf("adding taker(takerId: %v) for item(itemId : %v)", action.TakerId, action.ItemId))
-			err = s.ModelHelper.AddItemTaker(billID, action.ItemId, action.TakerId)
+			s.logger.DebugLog(fmt.Sprintf("adding taker(takerId: %v) for item(itemId : %v) in bill(billId: %v)", action.TakerId, action.ItemId, action.BillId))
+			err = s.ModelHelper.AddNewTakerForItem(splitID, action.BillId, action.ItemId, action.TakerId)
 
 		case common.DELETE_TAKER_FOR_ITEM:
-			s.logger.DebugLog(fmt.Sprintf("removing taker(takerId: %v) for item(itemId : %v)", action.TakerId, action.ItemId))
-			err = s.ModelHelper.DeleteItemTaker(billID, action.ItemId, action.TakerId)
+			s.logger.DebugLog(fmt.Sprintf("removing taker(takerId: %v) for item(itemId : %v) in bill(billId: %v)", action.TakerId, action.ItemId, action.BillId))
+			err = s.ModelHelper.DeleteTakerForItem(splitID, action.BillId, action.ItemId, action.TakerId)
 
 		case common.INCREMENT_TAKER_ID:
 			s.logger.DebugLog(fmt.Sprintf("incrementing taker(takerID: %v)", action.TakerId))
@@ -72,25 +78,25 @@ func (s *SessionManager) ExecuteAction(billID string, userID string, actionData 
 
 		// taker cases
 		case common.ADD_NEW_TAKER:
-			s.logger.DebugLog(fmt.Sprintf("adding taker(takerID: %v) with name : %v", action.TakerId, action.ItemName))
-			err = s.ModelHelper.AddTakerID(billID, action.TakerId, action.ItemName)
+			s.logger.DebugLog(fmt.Sprintf("adding taker(takerID: %v) with name : %v to split(splitID: %v)", action.TakerId, action.ItemName, splitID))
+			err = s.ModelHelper.AddNewTakerToSplit(splitID, action.TakerId, action.ItemName)
 
 		case common.DELETE_TAKER:
-			s.logger.DebugLog(fmt.Sprintf("deleting taker(takerID: %v)", action.TakerId))
-			err = s.ModelHelper.DeleteTakerID(billID, action.TakerId)
+			s.logger.DebugLog(fmt.Sprintf("deleting taker(takerID: %v) from split(splitID: %v)", action.TakerId, splitID))
+			err = s.ModelHelper.DeleteTakerFromSplit(splitID, action.TakerId)
 
 		case common.EDIT_TAKER:
 			s.logger.DebugLog(fmt.Sprintf("editing taker(takerID: %v)", action.TakerId))
 
 		case common.EDIT_BILL_INFORMATION:
-			s.logger.DebugLog("editing bill information")
-			err = s.ModelHelper.UpdateBillInformation(billID, action.Total)
+			s.logger.DebugLog(fmt.Sprintf("editing bill(billID: %v) information", action.BillId))
+			err = s.ModelHelper.UpdateBillInformation(splitID, action.BillId, action.Total, action.Location, action.Date)
 		}
 	}
 
 	if err == nil {
-		s.SessionDict[billID].RequiresNewTally = true
-		s.SessionDict[billID].BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
+		s.SessionDict[splitID].RequiresNewTally = true
+		s.SessionDict[splitID].BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
 	} else {
 		s.logger.DebugLog(fmt.Sprintf("Failed to execute action: %v", err))
 	}

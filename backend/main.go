@@ -6,7 +6,6 @@ import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/dakshin-2107/BillSplitterLite/backend/controllers/handlers"
 	"github.com/dakshin-2107/BillSplitterLite/backend/logger"
-	"github.com/dakshin-2107/BillSplitterLite/backend/routes"
 	"github.com/dakshin-2107/BillSplitterLite/backend/utils"
 	"github.com/joho/godotenv"
 
@@ -41,7 +40,7 @@ func main() {
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.LeaveSessionHandler]),
 
 		// route creator
-		utils.CreateHandlerConsumer(utils.NewRouteCreater, new(routes.IRouteCreator)),
+		utils.CreateHandlerConsumer(utils.NewRouteCreater, new(utils.IRouteCreator)),
 
 		// start the app
 		fx.Invoke(utils.StartApp),

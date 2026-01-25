@@ -13,11 +13,14 @@ type Action struct {
 	ActionId   int     `json:"actionId"`
 	ActionType int     `json:"actionType"`
 	SplitId    string  `json:"splitId"`
-	ItemId     string  `json:"itemId"`
+	BillId     int     `json:"billId"`
+	ItemId     int     `json:"itemId"`
 	ItemName   string  `json:"itemName"` // can be used for taker name
 	TakerId    string  `json:"takerId"`
 	Price      float32 `json:"price"`
 	Total      float32 `json:"total"`
+	Location   string  `json:"location"`
+	Date       string  `json:"date"`
 }
 
 type SessionManager struct {

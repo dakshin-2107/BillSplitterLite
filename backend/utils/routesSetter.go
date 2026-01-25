@@ -1,4 +1,4 @@
-package routes
+package utils
 
 import (
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"

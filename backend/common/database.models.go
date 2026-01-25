@@ -10,7 +10,6 @@ type IDatabase interface {
 	ConnectToDatabase() error
 	DisconnectFromDatabase() error
 	ISplitModifier
-	//managers.IActionManager
 }
 
 type DatabaseProvider struct {

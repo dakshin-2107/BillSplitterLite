@@ -1,6 +1,6 @@
 import React, { useRef, useState, useContext } from 'react';
 import './TallyPanel.css';
-import type { Tally, BillData } from '../../../common/interfaces';
+import type { Tally, SplitData } from '../../../common/interfaces';
 import html2canvas from 'html2canvas';
 import { SocketContextProvider } from '../action-manager/SocketContext';
 import { ActionType } from '../../../common/interfaces';
@@ -8,14 +8,16 @@ import { ActionType } from '../../../common/interfaces';
 interface TallyPanelProps {
     tally: Tally | null;
     participants: Record<string, string>;
-    billData: BillData;
+    splitData: SplitData;
 }
 
-const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }) => {
+const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData }) => {
     const SocketContext = useContext(SocketContextProvider);
     const panelRef = useRef<HTMLDivElement>(null)
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [newTotal, setNewTotal] = useState<number>(billData.total);
+    const [newTotal, setNewTotal] = useState<number>(splitData.totalAmount);
+    const [isCompact, setIsCompact] = useState<boolean>(true);
+
     const handleCopyImage = async () => {
         if (!panelRef.current) return;
 
@@ -52,14 +54,14 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
             SocketContext.publishAction({
                 actionId: 0,
                 actionType: ActionType.EDIT_BILL_INFO,
-                splitId: billData.splitId,
-                itemId: "",
+                splitId: splitData.splitId,
+                itemId: 0,
                 total: newTotal
             })
         }
     }
 
-    if (!tally) {
+    if (!tally || Object.keys(tally.userShares).length === 0) {
         return (
             <div className="tally-panel empty">
                 <h3>Bill Tally</h3>
@@ -68,15 +70,25 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
         );
     }
 
+    console.log("Tally", tally);
+    console.log("User Shares", Object.entries(tally.userShares));
+
     return (
         <div className="tally-panel" ref={panelRef}>
             <div className="panel-header">
-                <div className="bill-info">
-                    <h2 className="bill-location">{billData.location}</h2>
-                    <span className="bill-date">{billData.date}</span>
-                </div>
                 <div className="header-actions">
                     <span className="split-label">Per user split</span>
+                    <div className="view-toggle">
+                        <span className="toggle-label">Compact</span>
+                        <label className="switch">
+                            <input
+                                type="checkbox"
+                                checked={isCompact}
+                                onChange={(e) => setIsCompact(e.target.checked)}
+                            />
+                            <span className="slider round"></span>
+                        </label>
+                    </div>
                     <button className="copy-btn" onClick={handleCopyImage}>
                         Copy
                     </button>
@@ -87,19 +99,32 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
                     <div key={userId} className="user-share-card">
                         <div className="user-info">
                             <span className="user-name">{participants[userId] || userId}</span>
-                            <span className="user-total">{userShare.userShareTotal.toFixed(2)}</span>
+                            <span className="user-total">{userShare.userShareTotal?.toFixed(2)}</span>
                         </div>
-                        <div className="item-breakdown">
-                            {Object.entries(userShare.shares).map(([itemName, amount]) => (
-                                <div key={itemName} className="item-share">
-                                    <span className="item-name">{itemName}</span>
-                                    <span className="item-amount">{amount.toFixed(2)}</span>
+                        <div className="bill-shares-list">
+                            {Object.entries(userShare.billShares).map(([billId, billShare]) => (
+                                <div key={billId} className="bill-share-group">
+                                    <div className="bill-name-header">
+                                        <span className="bill-name">{tally.billNameMap[Number(billId)] || `Bill ${billId}`}</span>
+                                        <span className="bill-share-total">{billShare.billShareTotal?.toFixed(2)}</span>
+                                    </div>
+                                    {!isCompact && (
+                                        <div className="item-breakdown">
+                                            {Object.entries(billShare.itemShares).map(([itemName, amount]) => (
+                                                <div key={itemName} className="item-share">
+                                                    <span className="item-name">{itemName}</span>
+                                                    <span className="item-amount">{amount.toFixed(2)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     </div>
                 ))}
             </div>
+
 
             <div className="tally-header">
                 <h3></h3>
@@ -128,7 +153,7 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, billData }
                                     <button className="edit-trigger" onClick={() => setIsEditing(true)}>
                                         Edit
                                     </button>
-                                    <span className="amount">{billData.total.toFixed(2)}</span>
+                                    <span className="amount">{splitData.totalAmount.toFixed(2)}</span>
                                 </>
                             )}
                         </div>

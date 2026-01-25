@@ -31,56 +31,69 @@ func (h *HomeHandler) Init() {
 
 func (h *HomeHandler) Handle(ctx *gin.Context) {
 
-	billID, billIdErr := ctx.Cookie(common.BILL_SESSION_ID_STR)
-	// if bill cookie exists, find the bill
-	if billIdErr == nil {
-		// if bill exists, return the bill
-		if split, err := h.ModelHelper.GetBill(billID); err == nil && split != nil {
+	splitID, splitIdErr := ctx.Cookie(common.BILL_SESSION_ID_STR)
+	// if bill cookie exists, find the split
+	if splitIdErr == nil {
+		// if split exists, return the split
+		if split, err := h.ModelHelper.GetSplit(splitID); err == nil && split != nil {
 			ctx.JSON(http.StatusOK, common.SessionAlreadyExistsResponse(*split))
 			return
 		}
 	}
 
-	// if bill does not exist in DB, create new bill info from the form
-	ctx.Request.ParseForm()
-	place := ctx.PostForm("place")
-	splitDate := ctx.PostForm("dateTime")
-	names := ctx.PostFormArray("names")
-	image, imageErr := ctx.FormFile("image")
-
-	if imageErr == nil && splitDate != "" && place != "" && names != nil && len(names) > 0 {
-
-		newSplit := h.ModelHelper.CreateNewSplit()
-		newSplit.CreatedAt = time.Now()
-		newSplit.LastUpdated = time.Now()
-		h.ParseItemsFromImage(image, newSplit)
-		//h.ParseItemsFromImageDummy(image, newSplit)
-
-		h.CreateParticipantsMap(names, newSplit)
-		newSplit.Date = splitDate
-		newSplit.Location = place
-		newSplit.BillID = uuid.New().String()
-		newSplit.ItemIdCounter = len(newSplit.Items) + 1
-		err := h.ModelHelper.AddBillIfNotExists(newSplit)
-		if err == nil {
-			// TODO: Update the bill cookie age limit
-			// TODO: Update the user cookie age limit and extract the user name
-			domain := os.Getenv("BASE_URL") // domain is "" for now
-			ctx.SetSameSite(http.SameSiteStrictMode)
-			ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.BillID, math.MaxInt64, "/", domain, false, true)
-			ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", domain, false, true)
-			ctx.JSON(http.StatusOK, common.SessionCreationSuccessResponse(*newSplit))
-			return
-		}
-
-	} else {
-		// clear the cookies and return failure
-		domain := os.Getenv("BASE_URL")
-		ctx.SetSameSite(http.SameSiteStrictMode)
-		ctx.SetCookie(common.BILL_SESSION_ID_STR, "", -1, "/", domain, false, true)
-		ctx.SetCookie(common.USER_SESSION_ID_STR, "", -1, "/", domain, false, true)
+	// if split does not exist in DB, create new split info from the form
+	form, formErr := ctx.MultipartForm()
+	if formErr != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Failed to parse form"})
+		return
 	}
 
+	locations := form.Value["locations"]
+	dates := form.Value["dates"]
+	names := form.Value["people"]
+	images := form.File["images"]
+
+	if len(images) > 0 && len(images) == len(locations) && len(images) == len(dates) && len(names) > 0 {
+
+		newSplit := h.ModelHelper.CreateNewSplit()
+
+		err := h.ParseItemsFromImage(images, newSplit)
+		//err := h.ParseItemsFromImageDummy(images, newSplit)
+
+		if err != nil || len(newSplit.Bills) != len(images) {
+			h.Logger.InfoLog(fmt.Sprintf("Failed to parse bill with err: %v", err))
+			return
+		} else {
+
+			h.CreateParticipantsMap(names, newSplit)
+			newSplit.SplitID = uuid.New().String()
+			newSplit.CreatedAt = time.Now()
+			newSplit.LastUpdated = time.Now()
+			newSplit.BillIdCounter = len(newSplit.Bills) + 1
+
+			for billId, bill := range newSplit.Bills {
+				bill.Location = locations[billId-1]
+				bill.Date = dates[billId-1]
+				newSplit.Bills[billId] = bill
+			}
+
+			// add split to DB
+			err = h.ModelHelper.AddSplitIfNotExists(newSplit)
+			if err == nil {
+				domain := os.Getenv("BASE_URL")
+				ctx.SetSameSite(http.SameSiteStrictMode)
+				ctx.SetCookie(common.BILL_SESSION_ID_STR, newSplit.SplitID, math.MaxInt64, "/", domain, false, true)
+				ctx.SetCookie(common.USER_SESSION_ID_STR, "admin_boi", math.MaxInt64, "/", domain, false, true)
+				ctx.JSON(http.StatusOK, common.SessionCreationSuccessResponse(*newSplit))
+				return
+			}
+		}
+	}
+
+	domain := os.Getenv("BASE_URL")
+	ctx.SetSameSite(http.SameSiteStrictMode)
+	ctx.SetCookie(common.BILL_SESSION_ID_STR, "", -1, "/", domain, false, true)
+	ctx.SetCookie(common.USER_SESSION_ID_STR, "", -1, "/", domain, false, true)
 	ctx.JSON(http.StatusOK, common.SessionCreationFailureResponse())
 }
 
@@ -110,10 +123,6 @@ func (h *HomeHandler) CreateParticipantsMap(names []string, split *common.Split)
 	}
 
 	split.Participants = participantsMap
-
-	for _, item := range split.Items {
-		item.Takers = make(map[string]int)
-	}
 }
 
 func (h *HomeHandler) generateUniqueId(name string, usedIds map[string]bool) string {

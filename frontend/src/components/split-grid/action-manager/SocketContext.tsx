@@ -1,5 +1,5 @@
 import { createContext, useRef } from "react";
-import type { SocketProvider, ActionResponse, IAction, BillData } from "../../../common/interfaces";
+import type { SocketProvider, ActionResponse, IAction, SplitData } from "../../../common/interfaces";
 import { processAction } from "./ActionUtils";
 import useSocket from "react-use-websocket";
 import type { Options } from "react-use-websocket";
@@ -11,29 +11,32 @@ export const SocketContextProvider = createContext<SocketProvider | null>(null);
 
 interface SocketContextProps {
     children: React.ReactNode
-    setBillData: React.Dispatch<React.SetStateAction<BillData | null>>;
+    setSplitData: React.Dispatch<React.SetStateAction<SplitData | null>>;
     setTallyData: React.Dispatch<React.SetStateAction<Tally | null>>;
 }
 
-export const SocketContextComponent = ({ children, setBillData, setTallyData }: SocketContextProps) => {
+export const SocketContextComponent = ({ children, setSplitData, setTallyData }: SocketContextProps) => {
     const messageListeners = useRef<((msg: ActionResponse) => void)[]>([]);
     const tallyListeners = useRef<((msg: Tally) => void)[]>([]);
     const socketOptions: Options = {
         share: true,
         reconnectInterval: 500,
         reconnectAttempts: 5,
-        shouldReconnect: () => true, // must be updated to handle reconnection logic
+        shouldReconnect: () => true,
         onMessage: (event) => {
             try {
                 console.log("Message received:", event.data);
+
+                // action sync
                 const actionResponse: ActionResponse = JSON.parse(event.data);
                 if (actionResponse && actionResponse.success && actionResponse.action) {
                     console.log("Action received:", actionResponse);
-                    setBillData((oldBillData) => processAction(actionResponse.action, oldBillData));
+                    setSplitData((oldSplitData) => processAction(actionResponse.action, oldSplitData));
                     messageListeners.current.forEach(listener => listener(actionResponse));
                     return;
                 }
 
+                // tally sync
                 const tallyResponse: TallyResponse = JSON.parse(event.data);
                 if (tallyResponse && tallyResponse.success && tallyResponse.tally) {
                     console.log("Tally received:", tallyResponse);
@@ -42,15 +45,17 @@ export const SocketContextComponent = ({ children, setBillData, setTallyData }: 
                     return;
                 }
 
+                // split sync
                 const billResponse: ApiResponse = JSON.parse(event.data);
                 if (billResponse && billResponse.success) {
-                    if (billResponse.bill) {
+                    if (billResponse.split) {
                         console.log("Bill received:", billResponse);
-                        setBillData(billResponse.bill);
+                        setSplitData(billResponse.split);
                     }
                     else {
-                        console.log("Bill deleted:", billResponse);
-                        setBillData(null);
+                        // ignore else case for now since tally is not developed 
+                        //console.log("Bill deleted:", billResponse);
+                        //setSplitData(null);
                     }
                 }
             } catch (err) {
@@ -61,7 +66,7 @@ export const SocketContextComponent = ({ children, setBillData, setTallyData }: 
             console.log('WebSocket connected');
             publishAction({
                 actionType: ActionType.SYNC_BILL_STATE,
-                itemId: "0"
+                itemId: 0
             });
         },
         onClose: () => {

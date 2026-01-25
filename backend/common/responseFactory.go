@@ -10,19 +10,19 @@ func TallyResponse(tally Tally) gin.H {
 	}
 }
 
-func BillResponse(bill Split) gin.H {
+func SplitResponse(split Split) gin.H {
 	return gin.H{
 		"success": true,
 		"message": "Bill has been fetched",
-		"bill":    bill,
+		"split":   split,
 	}
 }
 
-func BillDeleteResponse() gin.H {
+func SplitDeleteResponse() gin.H {
 	return gin.H{
 		"success": true,
 		"message": "Bill has been deleted",
-		"bill":    nil,
+		"split":   nil,
 	}
 }
 
@@ -46,11 +46,11 @@ func ActionExecutionFailureResponse(action IAction, err error) gin.H {
 }
 
 // SessionCreationSuccessResponse creates a success response for session creation
-func SessionCreationSuccessResponse(newSplit Split) gin.H {
+func SessionCreationSuccessResponse(split Split) gin.H {
 	return gin.H{
 		"success": true,
 		"message": "Session has been created",
-		"bill":    newSplit,
+		"split":   split,
 	}
 }
 
@@ -59,7 +59,7 @@ func SessionAlreadyExistsResponse(split Split) gin.H {
 	return gin.H{
 		"success": true,
 		"message": "Session already exists",
-		"bill":    split,
+		"split":   split,
 	}
 }
 
@@ -85,10 +85,10 @@ func InvalidRequestBody() gin.H {
 }
 
 // SessionUriResponse creates a success response for session URI generation
-func SessionUriResponse(billID string) gin.H {
+func SessionUriResponse(splitID string) gin.H {
 	return gin.H{
 		"success":   true,
 		"message":   "Session URI generated",
-		"sessionId": billID,
+		"sessionId": splitID,
 	}
 }

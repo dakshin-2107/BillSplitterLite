@@ -15,7 +15,7 @@ import (
 
 const ACTIONS_QUEUE_KEY = "ActionsQueue"
 
-var errDefault error = fmt.Errorf("something went wrong") // since returning nil means the operation was successful
+var errDefault error = fmt.Errorf("something went wrong")
 
 type RedisDatabaseConnection struct {
 	common.DatabaseProvider
@@ -50,7 +50,6 @@ func (r *RedisDatabaseConnection) ConnectToDatabase() error {
 
 	r.IsDBConnected = true
 	r.logger.InfoLog("Successfully connected to Redis!")
-	r.logger.InfoLog(fmt.Sprintf("Ping response: %v", statusCmd.Val()))
 	return nil
 }
 
@@ -63,156 +62,57 @@ func (r *RedisDatabaseConnection) DisconnectFromDatabase() error {
 		r.logger.InfoLog(fmt.Sprintf("Error closing Redis client: %v", err))
 		return err
 	}
-
+	r.IsDBConnected = false
 	r.logger.InfoLog("Redis client closed.")
-	return errDefault
+	return nil
 }
 
-func (r *RedisDatabaseConnection) AddBillIfNotExists(split *common.Split) error {
-	if exists, err := r.DoesSplitIdExist(split.BillID); err == nil && !exists {
+// ISplitModifier implementation
+
+func (r *RedisDatabaseConnection) GetSplit(splitId string) (*common.Split, error) {
+	result, err := r.redisClient.Do(r.ctx, "JSON.GET", splitId, "$").Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var splits []common.Split
+	switch res := result.(type) {
+	case string:
+		if err := json.Unmarshal([]byte(res), &splits); err != nil {
+			return nil, err
+		}
+	case []byte:
+		if err := json.Unmarshal(res, &splits); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unexpected type from Redis JSON.GET")
+	}
+
+	if len(splits) == 0 {
+		return nil, fmt.Errorf("split not found")
+	}
+	return &splits[0], nil
+}
+
+func (r *RedisDatabaseConnection) AddSplitIfNotExists(split *common.Split) error {
+	if exists, err := r.DoesSplitIdExist(split.SplitID); err == nil && !exists {
 		data, err := json.Marshal(split)
 		if err != nil {
 			r.logger.InfoLog(fmt.Sprintf("Error marshalling split: %v", err))
 			return err
 		}
 
-		err = r.redisClient.Do(r.ctx, "JSON.SET", split.BillID, "$", data).Err()
+		err = r.redisClient.Do(r.ctx, "JSON.SET", split.SplitID, "$", data).Err()
 		if err != nil {
 			r.logger.InfoLog(fmt.Sprintf("Error setting split in Redis: %v", err))
 			return err
 		}
 	}
-
 	return nil
 }
 
-func (r *RedisDatabaseConnection) AddBillItem(splitId string, item common.Item) error {
-	exist, err := r.DoesItemIdExist(splitId, item.Id)
-	if err == nil {
-		if !exist {
-			data, err := json.Marshal(item)
-			if err != nil {
-				r.logger.InfoLog(fmt.Sprintf("Error marshalling split: %v", err))
-				return err
-			}
-
-			path := fmt.Sprintf("$.items.%v", item.Id)
-			err = r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, data).Err()
-			if err != nil {
-				r.logger.InfoLog(fmt.Sprintf("error appending item to split in Redis: %v", err))
-				return err
-			}
-
-			// Increment itemIdCounter
-			err = r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, "$.itemIdCounter", 1).Err()
-			if err != nil {
-				r.logger.InfoLog(fmt.Sprintf("error incrementing itemIdCounter in Redis: %v", err))
-				return err
-			}
-		} else {
-			err = fmt.Errorf("item already exists")
-		}
-	}
-
-	return err
-}
-
-func (r *RedisDatabaseConnection) DeleteBillItem(splitId string, itemId string) error {
-	path := fmt.Sprintf("$.items.%v", itemId)
-	result, err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Result()
-	if err != nil {
-		r.logger.InfoLog(fmt.Sprintf("Error removing item from split in Redis: %v", err))
-		return err
-	}
-
-	if successInt, ok := result.(int64); ok {
-		if successInt == 0 {
-			return fmt.Errorf("item(itemId : %v) was not present ", itemId)
-		} else {
-			return nil
-		}
-	}
-
-	return errDefault
-}
-
-func (r *RedisDatabaseConnection) AddItemTaker(splitId string, itemId string, takerId string) error {
-	if exists, err := r.DoesTakerIdExist(splitId, takerId); exists && err == nil {
-		path := fmt.Sprintf("$.items.%v.takers.%v", itemId, takerId)
-		result, incrErr := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, path, 1).Result()
-		if incrErr == nil {
-			if updatedCount, incrSuccess := r.CheckResult(result); incrSuccess {
-				r.logger.DebugLog(fmt.Sprintf("taker(ID : %v, count : %v) incremented for item(ID : %v)", takerId, updatedCount, itemId))
-				return nil
-			} else {
-				_, setErr := r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, 1).Result()
-				if setErr != redis.Nil {
-					r.logger.InfoLog(fmt.Sprintf("Error adding item taker to split in Redis: %v", setErr))
-					return setErr
-				}
-
-				return nil
-			}
-		}
-	}
-
-	return errDefault
-}
-
-func (r *RedisDatabaseConnection) DeleteItemTaker(splitId string, itemId string, takerId string) error {
-	if exists, err := r.DoesTakerIdExist(splitId, takerId); exists && err == nil {
-		path := fmt.Sprintf("$.items.%v.takers.%v", itemId, takerId)
-		result, incrErr := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, path, -1).Result()
-		if incrErr == nil {
-			if updatedCount, ok := r.CheckResult(result); ok {
-				if updatedCount <= 0 {
-					// Delete the taker from the item if share count reaches 0 or less
-					err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Err()
-					if err != nil {
-						r.logger.InfoLog(fmt.Sprintf("Error deleting zero-share taker from split in Redis: %v", err))
-						return err
-					}
-					r.logger.DebugLog(fmt.Sprintf("taker(ID : %v) removed from item(ID : %v) as count reached %v", takerId, itemId, updatedCount))
-				} else {
-					r.logger.DebugLog(fmt.Sprintf("taker(ID : %v, count : %v) decrement for item(ID : %v)", takerId, updatedCount, itemId))
-				}
-				return nil
-			}
-		} else {
-			return incrErr
-		}
-	}
-
-	return errDefault
-}
-
-func (r *RedisDatabaseConnection) AddTakerID(splitId string, takerId string, takerName string) error {
-	path := fmt.Sprintf("$.participants.%v", takerId)
-	err := r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, fmt.Sprintf("\"%s\"", takerName)).Err()
-	if err != redis.Nil {
-		r.logger.InfoLog(fmt.Sprintf("Error adding taker to split in Redis: %v", err))
-		return err
-	}
-
-	return errDefault
-}
-
-func (r *RedisDatabaseConnection) DeleteTakerID(splitId string, takerId string) error {
-	// check if the taker ID is being used before deleting the ID
-	if r.IsTakerIdUsed(splitId, takerId) {
-		return fmt.Errorf("cannot delete since taker is part of the split")
-	} else {
-		participantPath := fmt.Sprintf("$.participants.%v", takerId)
-		result, err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, participantPath).Result()
-		if resultInt, ok := result.(int64); ok && err == nil && resultInt == 1 {
-			return nil
-		}
-	}
-
-	return errDefault
-}
-
-func (r *RedisDatabaseConnection) DeleteBillIfExists(splitId string) error {
+func (r *RedisDatabaseConnection) DeleteSplitIfExists(splitId string) error {
 	err := r.redisClient.Del(r.ctx, splitId).Err()
 	if err != nil {
 		r.logger.InfoLog(fmt.Sprintf("Error deleting split from Redis: %v", err))
@@ -221,33 +121,140 @@ func (r *RedisDatabaseConnection) DeleteBillIfExists(splitId string) error {
 	return nil
 }
 
-func (r *RedisDatabaseConnection) GetNewItemId(splitID string) string {
-	data, err := r.redisClient.Do(r.ctx, "JSON.GET", splitID, "$.itemIdCounter").Result()
+func (r *RedisDatabaseConnection) GetNewBillId(splitId string) int {
+	result, err := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, "$.billIdCounter", 1).Result()
+	if err == nil {
+		if val, ok := r.CheckResult(result); ok {
+			return val
+		}
+	}
+	r.logger.InfoLog(fmt.Sprintf("Error getting new bill ID: %v", err))
+	return 0
+}
+
+func (r *RedisDatabaseConnection) AddBillToSplit(splitId string, bill common.Bill) error {
+	data, err := json.Marshal(bill)
 	if err != nil {
-		r.logger.InfoLog(fmt.Sprintf("Error getting itemIdCounter from Redis: %v", err))
-		return ""
+		return err
+	}
+	path := fmt.Sprintf("$.bills.%d", bill.BillID)
+	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, data).Err()
+}
+
+func (r *RedisDatabaseConnection) DeleteBillFromSplit(splitId string, billId int) error {
+	path := fmt.Sprintf("$.bills.%d", billId)
+	result, err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Result()
+	if err != nil {
+		return err
+	}
+	if successInt, ok := result.(int64); ok && successInt > 0 {
+		return nil
+	}
+	return fmt.Errorf("bill not found")
+}
+
+func (r *RedisDatabaseConnection) AddNewTakerToSplit(splitId string, takerId string, takerName string) error {
+	path := fmt.Sprintf("$.participants.%v", takerId)
+	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, fmt.Sprintf("\"%s\"", takerName)).Err()
+}
+
+func (r *RedisDatabaseConnection) DeleteTakerFromSplit(splitId string, takerId string) error {
+	if r.IsTakerIdUsed(splitId, takerId) {
+		return fmt.Errorf("cannot delete since taker is part of a bill")
+	}
+	path := fmt.Sprintf("$.participants.%v", takerId)
+	result, err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Result()
+	if successInt, ok := result.(int64); ok && err == nil && successInt == 1 {
+		return nil
+	}
+	return fmt.Errorf("participant not found or could not be deleted")
+}
+
+func (r *RedisDatabaseConnection) GetNewItemId(splitId string, billId int) int {
+	path := fmt.Sprintf("$.bills.%d.itemIdCounter", billId)
+	data, err := r.redisClient.Do(r.ctx, "JSON.GET", splitId, path).Result()
+	if err != nil {
+		r.logger.InfoLog(fmt.Sprintf("Error getting itemIdCounter: %v", err))
+		return 0
 	}
 
 	var counter []int
 	err = json.Unmarshal([]byte(data.(string)), &counter)
 	if err != nil || len(counter) == 0 {
-		return ""
+		return 0
 	}
-
-	// no need to increment, already done in AddBillItem
-	return fmt.Sprintf("%v", counter[0])
+	return counter[0]
 }
 
-// admin actions
-func (r *RedisDatabaseConnection) UpdateBillMetaData(splitId string, newSplit common.Split) error {
-	return nil
-}
-
-func (r *RedisDatabaseConnection) UpdateBillInformation(splitId string, newTotal float32) error {
-	err := r.redisClient.Do(r.ctx, "JSON.SET", splitId, "$.total", newTotal).Err()
+func (r *RedisDatabaseConnection) AddItemToBill(splitId string, billId int, item common.Item) error {
+	data, err := json.Marshal(item)
 	if err != nil {
-		r.logger.InfoLog(fmt.Sprintf("Error updating split total in Redis: %v", err))
 		return err
 	}
-	return nil
+	path := fmt.Sprintf("$.bills.%d.items.%d", billId, item.Id)
+	err = r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, data).Err()
+	if err != nil {
+		return err
+	}
+	// Increment itemIdCounter in the bill
+	return r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, fmt.Sprintf("$.bills.%d.itemIdCounter", billId), 1).Err()
+}
+
+func (r *RedisDatabaseConnection) DeleteItemFromBill(splitId string, billId int, itemId int) error {
+	path := fmt.Sprintf("$.bills.%d.items.%d", billId, itemId)
+	result, err := r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Result()
+	if err != nil {
+		return err
+	}
+	if successInt, ok := result.(int64); ok && successInt > 0 {
+		return nil
+	}
+	return fmt.Errorf("item not found")
+}
+
+func (r *RedisDatabaseConnection) AddNewTakerForItem(splitId string, billId int, itemId int, takerId string) error {
+	if exists, err := r.DoesTakerIdExist(splitId, takerId); exists && err == nil {
+		path := fmt.Sprintf("$.bills.%d.items.%d.takers.%s", billId, itemId, takerId)
+		result, incrErr := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, path, 1).Result()
+		if incrErr == nil {
+			if _, ok := r.CheckResult(result); ok {
+				return nil
+			} else {
+				// Initialize taker with 1 share if it doesn't exist
+				return r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, 1).Err()
+			}
+		}
+		return incrErr
+	}
+	return fmt.Errorf("taker does not exist in split participants")
+}
+
+func (r *RedisDatabaseConnection) DeleteTakerForItem(splitId string, billId int, itemId int, takerId string) error {
+	path := fmt.Sprintf("$.bills.%d.items.%d.takers.%s", billId, itemId, takerId)
+	result, incrErr := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, path, -1).Result()
+	if incrErr == nil {
+		if updatedCount, ok := r.CheckResult(result); ok {
+			if updatedCount <= 0 {
+				return r.redisClient.Do(r.ctx, "JSON.DEL", splitId, path).Err()
+			}
+			return nil
+		}
+	}
+	return incrErr
+}
+
+func (r *RedisDatabaseConnection) UpdateBillInformation(splitId string, billId int, newTotal float32, newLocation string, newDate string) error {
+	billPath := fmt.Sprintf("$.bills.%d", billId)
+	// Update total
+	err := r.redisClient.Do(r.ctx, "JSON.SET", splitId, billPath+".total", newTotal).Err()
+	if err != nil {
+		return err
+	}
+	// Update location
+	err = r.redisClient.Do(r.ctx, "JSON.SET", splitId, billPath+".location", fmt.Sprintf("\"%s\"", newLocation)).Err()
+	if err != nil {
+		return err
+	}
+	// Update date
+	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, billPath+".date", fmt.Sprintf("\"%s\"", newDate)).Err()
 }
