@@ -36,7 +36,7 @@ const (
 	EDIT_TAKER
 
 	// edit bill information - actual bill total for now
-	EDIT_BILL_INFORMATION
+	EDIT_SPLIT_TOTAL
 
 	// add all participants to an item
 	ADD_ALL_TAKERS_FOR_ITEM

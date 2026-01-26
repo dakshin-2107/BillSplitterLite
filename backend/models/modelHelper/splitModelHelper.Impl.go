@@ -85,6 +85,10 @@ func (sp *SplitModelHelper) AddAllTakersToItem(splitId string, billId int, itemI
 	return sp.db.AddAllTakersToItem(splitId, billId, itemId)
 }
 
+func (sp *SplitModelHelper) UpdateSplitTotal(splitId string, newTotal float32) error {
+	return sp.db.UpdateSplitTotal(splitId, newTotal)
+}
+
 // Creation helpers
 func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
 	return &common.Split{

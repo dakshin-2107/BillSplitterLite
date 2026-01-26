@@ -20,7 +20,7 @@ var allowedOrigins = []string{
 	"http://localhost:5174",
 	"http://192.168.0.169:5173",
 	"http://192.168.0.169:5174",
-	"https://splitzo.dak-shin.com",
+	"https://splitzy.dak-shin.com/",
 }
 
 func CreateGinEngine(logger logger.ILogger) *gin.Engine {

@@ -36,18 +36,6 @@
     gap: 2rem;
 }
 
-
-.carousel-actions {
-    display: flex;
-    justify-content: flex-end;
-    /* Move to far right */
-    align-items: center;
-    gap: 1.5rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #333;
-}
-
 /* Primary Session Buttons - Consistent Size */
 .btn-start-session,
 .btn-reset-all {

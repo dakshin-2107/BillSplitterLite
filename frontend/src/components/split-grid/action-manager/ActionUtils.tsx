@@ -140,7 +140,7 @@ export function processAction(action: IAction, splitData: SplitData | null): Spl
             }
             break;
 
-        case ActionType.EDIT_BILL_INFO:
+        case ActionType.EDIT_SPLIT_TOTAL:
             if (action.total) {
                 newSplitData.totalAmount = action.total;
             }

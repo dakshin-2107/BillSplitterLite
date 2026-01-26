@@ -5,11 +5,10 @@ import './ItemPopup.css';
 
 interface ItemPopupProps {
     onClose: () => void;
-    newItemId: number;
     billId: number;
 }
 
-const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, newItemId, billId }) => {
+const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, billId }) => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const socketContext = useContext(SocketContextProvider);
@@ -30,7 +29,7 @@ const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, newItemId, billId }) => 
             socketContext.publishAction({
                 actionType: ActionType.ADD_NEW_ITEM,
                 billId: billId,
-                itemId: newItemId, // backend will generate it or use this
+                itemId: -1, // backend will generate it or use this
                 itemName: name,
                 price: numericPrice,
             });

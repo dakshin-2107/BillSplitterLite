@@ -79,8 +79,8 @@ export const ActionType = {
     DELETE_TAKER: 11,
     EDIT_TAKER: 12,
 
-    // edit bill information
-    EDIT_BILL_INFO: 13,
+    // edit split total
+    EDIT_SPLIT_TOTAL: 13,
 
     // add all participants to an item
     ADD_ALL_TAKERS_FOR_ITEM: 14,

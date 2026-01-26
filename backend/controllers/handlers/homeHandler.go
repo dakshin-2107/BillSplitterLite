@@ -32,16 +32,13 @@ func (h *HomeHandler) Init() {
 func (h *HomeHandler) Handle(ctx *gin.Context) {
 
 	splitID, splitIdErr := ctx.Cookie(common.BILL_SESSION_ID_STR)
-	// if bill cookie exists, find the split
 	if splitIdErr == nil {
-		// if split exists, return the split
 		if split, err := h.ModelHelper.GetSplit(splitID); err == nil && split != nil {
 			ctx.JSON(http.StatusOK, common.SessionAlreadyExistsResponse(*split))
 			return
 		}
 	}
 
-	// if split does not exist in DB, create new split info from the form
 	form, formErr := ctx.MultipartForm()
 	if formErr != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Failed to parse form"})
@@ -75,6 +72,7 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 				bill.Location = locations[billId-1]
 				bill.Date = dates[billId-1]
 				newSplit.Bills[billId] = bill
+				newSplit.TotalAmount += bill.TotalAmount
 			}
 
 			// add split to DB

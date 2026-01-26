@@ -63,7 +63,7 @@ const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
                 <label>Location :</label>
                 <input
                     type="text"
-                    placeholder="Dunder mifflin"
+                    placeholder="Dunder Mifflin"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                 />

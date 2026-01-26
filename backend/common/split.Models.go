@@ -54,6 +54,7 @@ type ISplitModifier interface {
 	AddAllTakersToItem(splitId string, billId int, itemId int) error
 
 	UpdateBillInformation(splitId string, billId int, newTotal float32, newLocation string, newDate string) error
+	UpdateSplitTotal(splitId string, newTotal float32) error
 }
 
 type ISplitModelHelper interface {

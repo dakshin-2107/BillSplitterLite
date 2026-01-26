@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './SplitForm.css';
 import type { ApiResponse, SplitData, BillFormData, SplitFormData } from '../../common/interfaces';
 import { URLProvider } from '../../common/urlProvider';
+import { storageUtils } from '../../common/storageUtils';
 import BillCarousel from './bill-carousel/BillCarousel';
 import BillForm from './bill-form/BillForm';
 import PeoplePanel from './people-panel/PeoplePanel';
@@ -20,6 +21,39 @@ const SplitForm: React.FC<SplitFormProps> = ({ onSubmitSuccess, onSubmitError })
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const isInitialMount = useRef(true);
+
+    // Load draft on mount
+    useEffect(() => {
+        const loadDraft = async () => {
+            try {
+                const draft = await storageUtils.getDraft();
+                if (draft) {
+                    setSplitFormData(draft);
+                }
+            } catch (err) {
+                console.error("Failed to load draft:", err);
+            }
+        };
+        loadDraft();
+    }, []);
+
+    // Save draft on changes
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        const saveDraft = async () => {
+            try {
+                await storageUtils.saveDraft(splitFormData);
+            } catch (err) {
+                console.error("Failed to save draft:", err);
+            }
+        };
+        saveDraft();
+    }, [splitFormData]);
 
     // bill form stuff
     const handleAddBill = (bill: BillFormData) => {
@@ -44,8 +78,10 @@ const SplitForm: React.FC<SplitFormProps> = ({ onSubmitSuccess, onSubmitError })
     const handleResetAll = () => {
         setSplitFormData((prev: SplitFormData) => ({
             ...prev,
-            billData: []
+            billData: [],
+            peopleList: [] // Clear people too on reset
         }));
+        storageUtils.clearDraft();
     };
 
 
@@ -96,6 +132,8 @@ const SplitForm: React.FC<SplitFormProps> = ({ onSubmitSuccess, onSubmitError })
 
             const result: ApiResponse = await response.json();
             if (result.success && result.split) {
+                // Clear draft on success before calling onSubmitSuccess
+                await storageUtils.clearDraft();
                 onSubmitSuccess(result.split);
             } else {
                 throw new Error(result.message || 'Failed to process session');

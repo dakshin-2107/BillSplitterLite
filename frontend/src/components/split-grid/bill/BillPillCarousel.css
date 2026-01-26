@@ -1,0 +1,97 @@
+.bill-pill-carousel-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+    padding: 0 10px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.bill-pills-wrapper {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 8px 4px;
+    flex: 1;
+}
+
+/* Hide scrollbar but keep functionality */
+.bill-pills-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.bill-pills-wrapper {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.bill-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 20px;
+    min-width: 140px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.bill-pill:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    border-color: rgba(100, 181, 246, 0.3);
+}
+
+.bill-pill.active {
+    background: rgba(100, 181, 246, 0.15);
+    border-color: #64b5f6;
+    box-shadow: 0 4px 15px rgba(100, 181, 246, 0.2);
+}
+
+.pill-location {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.pill-date {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+}
+
+.scroll-arrow {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: monospace;
+    flex-shrink: 0;
+}
+
+.scroll-arrow:hover {
+    background: rgba(100, 181, 246, 0.2);
+    border-color: #64b5f6;
+    color: #64b5f6;
+}
+
+.scroll-arrow:active {
+    transform: scale(0.9);
+}

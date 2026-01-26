@@ -275,3 +275,7 @@ func (r *RedisDatabaseConnection) AddAllTakersToItem(splitId string, billId int,
 	}
 	return nil
 }
+
+func (r *RedisDatabaseConnection) UpdateSplitTotal(splitId string, newTotal float32) error {
+	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, "$.totalAmount", newTotal).Err()
+}
