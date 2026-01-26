@@ -34,6 +34,10 @@ _Assign items to takers and view the real-time tally._
 
 ![Split-up Page Screenshot](images/split_up_page.png)
 
+### Different tally views 
+
+![Tally View Screenshot](images/tally_views.png)
+
 ---
 
 ## Tech Stack
