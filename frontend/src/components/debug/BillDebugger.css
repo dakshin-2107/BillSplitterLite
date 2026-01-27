@@ -1,0 +1,61 @@
+.bill-debugger-container {
+    margin-top: 2rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    overflow: hidden;
+    position: relative;
+    max-width: 100%;
+}
+
+.bill-debugger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.bill-debugger-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.bill-debugger-content {
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #e5e7eb;
+}
+
+.bill-debugger-content pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Custom scrollbar for the debugger */
+.bill-debugger-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bill-debugger-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.bill-debugger-content::-webkit-scrollbar-thumb {
+    background: rgba(167, 139, 250, 0.3);
+    border-radius: 10px;
+}
+
+.bill-debugger-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(167, 139, 250, 0.5);
+}

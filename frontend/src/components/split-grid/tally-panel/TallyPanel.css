@@ -1,0 +1,370 @@
+.tally-panel {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    color: #fff;
+    min-width: 320px;
+    max-width: 400px;
+    height: fit-content;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.tally-section-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-left: 20px;
+    height: fit-content;
+}
+
+.tally-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+}
+
+.tally-panel.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    margin-left: 20px;
+    padding: 24px;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    min-width: 320px;
+}
+
+.tally-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+}
+
+.tally-header h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.total-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.summary-item .amount {
+    color: #fff;
+    font-weight: 500;
+}
+
+.summary-item.difference {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+}
+
+.amount.warning {
+    color: #ff4d4d;
+}
+
+.amount.success {
+    color: #00e676;
+}
+
+.user-shares-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.panel-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bill-info {
+    margin-bottom: 12px;
+}
+
+.bill-location {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.bill-date {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.header-actions {
+    display: none;
+    /* Removed as it's now in .tally-controls */
+}
+
+
+.view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Toggle Switch Styling */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .4s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #64b5f6;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: rgba(100, 181, 246, 0.2);
+    border-color: rgba(100, 181, 246, 0.4);
+}
+
+input:checked+.slider:before {
+    transform: translateX(14px);
+    background-color: #90caf9;
+}
+
+.slider.round {
+    border-radius: 20px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+
+.split-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+.copy-btn {
+    background: rgba(100, 181, 246, 0.1);
+    border: 1px solid rgba(100, 181, 246, 0.3);
+    color: #64b5f6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background: rgba(100, 181, 246, 0.2);
+    border-color: #64b5f6;
+}
+
+.copy-btn:active {
+    transform: scale(0.95);
+}
+
+.user-share-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.user-share-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.user-name {
+    color: #64b5f6;
+}
+
+.item-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item-share {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.item-amount {
+    font-family: monospace;
+}
+
+.bill-shares-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bill-share-group {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+}
+
+.bill-name-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.bill-name {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.bill-share-total {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+
+/* Inline Editor Styles */
+.summary-item.actual {
+    align-items: center;
+    position: relative;
+}
+
+.edit-trigger {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 2px 6px;
+    margin-left: 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    height: fit-content;
+}
+
+.edit-trigger:hover {
+    color: #64b5f6;
+    background: rgba(100, 181, 246, 0.1);
+}
+
+.edit-total-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.edit-total-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-bottom: 1px solid rgba(100, 181, 246, 0.5);
+    color: #fff;
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    width: 80px;
+    outline: none;
+    text-align: right;
+}
+
+.edit-total-input::-webkit-inner-spin-button,
+.edit-total-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.inline-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.inline-action-btn.save {
+    color: #00e676;
+}
+
+.inline-action-btn.cancel {
+    color: #ff4d4d;
+}
+
+.inline-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
