@@ -22,6 +22,22 @@ Have you ever gone out with your friends for dinner and suddenly someone is stuc
 
 ---
 
+## How to Use
+
+1. **Upload & Add Participants** — Snap a high-quality photo of your bill and add the names of everyone who's splitting.
+
+2. **Start a Session** — Hit the **Start Session** button to kick things off.
+
+3. **Assign Items** — Once the session is live, you'll see all the bill items neatly organized. Tap on each item to assign it to the people who had it.
+
+4. **Invite Your Group** *(Optional)* — Click **Share Bill** to generate a join link. Send it to your friends so they can hop in and claim their own items in real-time.
+
+5. **Copy & Share the Tally** — When you're done, use the copy button above the tally to grab either a detailed breakdown or a quick summary, and share it with your group.
+
+🎉 **Congratulations!** You've just saved yourself from infuriating mental math and endless debates about who had the garlic bread.
+
+---
+
 ## Screenshots
 
 ### Home Page
@@ -57,5 +73,3 @@ _Assign items to takers and view the real-time tally._
 MIT
 
 ---
-
-> No more, "who had the garlic bread?" debates.
