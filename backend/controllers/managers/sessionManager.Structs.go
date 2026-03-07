@@ -1,6 +1,8 @@
 package managers
 
 import (
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
@@ -24,6 +26,7 @@ type Action struct {
 }
 
 type SessionManager struct {
+	mu          sync.RWMutex // protects SessionDict
 	SessionDict map[string]*SplitSession
 	Upgrader    *websocket.Upgrader
 	logger      logger.ILogger
@@ -35,7 +38,7 @@ type SplitSession struct {
 	ClientConnections map[string]*websocket.Conn
 	AdminConnection   *websocket.Conn
 	UserIdCounter     int
-	RequiresNewTally  bool
+	RequiresNewTally  atomic.Bool
 	LastUsed          time.Time
 	BroadcastChannel  chan gin.H
 	SignalChannel     chan Action

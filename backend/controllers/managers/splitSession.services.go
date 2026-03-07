@@ -35,7 +35,7 @@ func (sess *SplitSession) RunTallyService() {
 				return
 			}
 		case <-ticker.C:
-			if !sess.RequiresNewTally {
+			if !sess.RequiresNewTally.Load() {
 				continue
 			}
 			// Get the current split (containing all bills)
@@ -113,7 +113,7 @@ func (sess *SplitSession) RunTallyService() {
 
 			// Publish to everyone
 			fmt.Println("Publishing tally: ", tally)
-			sess.RequiresNewTally = false
+			sess.RequiresNewTally.Store(false)
 			sess.BroadcastChannel <- common.TallyResponse(tally)
 		}
 	}

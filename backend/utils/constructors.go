@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"go.uber.org/fx"
 )
 
 var allowedOrigins = []string{
@@ -104,12 +106,35 @@ func NewConnUpgrader() *websocket.Upgrader {
 	}
 }
 
-func StartApp(r *gin.Engine, logger logger.ILogger, rc IRouteCreator, db common.IDatabase) {
+func StartApp(lc fx.Lifecycle, r *gin.Engine, logger logger.ILogger, rc IRouteCreator, db common.IDatabase, sessionManager common.ISessionManager) {
 	logger.DebugLog("Starting the app")
 
 	if !db.IsConnected() {
 		panic("could not connect to redis")
 	}
 
-	r.Run(fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT")))
+	addr := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	server := &http.Server{Addr: addr, Handler: r}
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			logger.InfoLog(fmt.Sprintf("Server listening on %s", addr))
+			go func() {
+				if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+					logger.InfoLog(fmt.Sprintf("Server error: %v", err))
+				}
+			}()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			logger.InfoLog("Shutting down server...")
+			if err := server.Shutdown(ctx); err != nil {
+				logger.InfoLog(fmt.Sprintf("Server shutdown error: %v", err))
+			}
+			sessionManager.CleanSessions()
+			db.DisconnectFromDatabase()
+			logger.InfoLog("Shutdown complete.")
+			return nil
+		},
+	})
 }

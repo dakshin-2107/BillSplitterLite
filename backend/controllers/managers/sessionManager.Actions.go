@@ -30,8 +30,10 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 			s.logger.DebugLog("Bye Bye")
 			err = s.ModelHelper.DeleteSplitIfExists(splitID)
 			if err == nil {
-				s.SessionDict[splitID].BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
-				s.SessionDict[splitID].SignalChannel <- action
+				if sess, ok := s.getSession(splitID); ok {
+					sess.BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
+					sess.SignalChannel <- action
+				}
 				return nil
 			}
 
@@ -43,7 +45,9 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 			}
 
 			requiresTallyComputation = true
-			s.SessionDict[splitID].BroadcastChannel <- common.SplitResponse(*split)
+			if sess, ok := s.getSession(splitID); ok {
+				sess.BroadcastChannel <- common.SplitResponse(*split)
+			}
 
 		// item cases
 		case common.ADD_NEW_ITEM:
@@ -115,8 +119,10 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 	}
 
 	if err == nil {
-		s.SessionDict[splitID].RequiresNewTally = requiresTallyComputation
-		s.SessionDict[splitID].BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
+		if sess, ok := s.getSession(splitID); ok {
+			sess.RequiresNewTally.Store(requiresTallyComputation)
+			sess.BroadcastChannel <- common.ActionExecutionSuccessResponse(&action)
+		}
 	} else {
 		s.logger.DebugLog(fmt.Sprintf("Failed to execute action: %v", err))
 	}

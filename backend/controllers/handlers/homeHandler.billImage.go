@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"mime/multipart"
 	"strings"
 
@@ -255,22 +255,21 @@ func (h *HomeHandler) CallGeminiAPI(images []*multipart.FileHeader) (*genai.Gene
 	// auto uses the API key from the env variable `GEMINI_API_KEY` automatically.
 	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
 	}
 
 	parts := []*genai.Part{}
 	for _, image := range images {
 		file, err := image.Open()
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("failed to open image: %w", err)
 		}
 		defer file.Close()
 
 		imageBytes := make([]byte, image.Size)
 		_, err = file.Read(imageBytes)
 		if err != nil {
-			log.Fatal(err)
-			return nil, err
+			return nil, fmt.Errorf("failed to read image bytes: %w", err)
 		}
 
 		parts = append(parts, []*genai.Part{
@@ -295,8 +294,7 @@ func (h *HomeHandler) CallGeminiAPI(images []*multipart.FileHeader) (*genai.Gene
 		},
 	)
 	if err != nil {
-		log.Fatal(err)
-		return nil, err
+		return nil, fmt.Errorf("Gemini GenerateContent failed: %w", err)
 	}
 
 	return result, nil
