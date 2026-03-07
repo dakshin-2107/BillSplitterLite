@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './PeoplePanel.css';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface PeoplePanelProps {
     people: string[];
@@ -46,7 +48,7 @@ const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
         <div className="people-panel">
             <h2 className="panel-title">People involved :</h2>
             <div className="people-input-group">
-                <input
+                <Input
                     type="text"
                     className="people-input"
                     value={name}
@@ -55,9 +57,9 @@ const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
                         setName(e.target.value);
                         if (error) setError(null);
                     }}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                 />
-                <button className="btn-add-person" onClick={handleAdd}>Add</button>
+                <Button onClick={handleAdd}>Add</Button>
             </div>
             {error && <p style={{ color: '#ff4444', fontSize: '0.8rem', marginTop: '-1rem', marginBottom: '1rem' }}>{error}</p>}
 
@@ -66,13 +68,14 @@ const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
                     people.map((person, index) => (
                         <div key={index} className="person-item">
                             <span className="person-name">{person}</span>
-                            <button
-                                className="btn-remove-person"
+                            <Button
+                                variant="destructive"
+                                size="sm"
                                 onClick={() => handleRemove(index)}
                                 aria-label="Remove person"
                             >
-                                −
-                            </button>
+                                X
+                            </Button>
                         </div>
                     ))
                 ) : (

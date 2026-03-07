@@ -1,104 +1,58 @@
 .bill-carousel-container {
-    padding: 1rem;
-    background: #1E1E1E;
-    /* Surface/Card */
-    border-radius: 12px;
-    border: 1px solid #333;
-    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bill-carousel-wrapper {
+    padding: 1.5rem 3.5rem;
+    background: var(--carousel-background-color);
+    border: 1px solid var(--input-border-color);
+    border-radius: var(--radius-sm);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-}
-
-.carousel-title {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    color: #FFFFFF;
-}
-
-.carousel-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    position: relative;
-    margin-top: 15px;
-}
-
-.carousel-actions {
-    display: flex;
-    justify-content: flex-end;
-    /* Move to far right */
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1rem;
-    border-top: 1px solid #333;
-}
-
-.bill-items-list {
-    display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    padding: 0.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: #BB86FC transparent;
-    flex: 1;
-}
-
-.bill-carousel-item {
-    background: #121212;
-    /* Primary Background for inner items */
-    border: 1px solid #333;
-    border-radius: 8px;
-    padding: 1rem;
-    display: flex;
-    gap: 1.2rem;
-    min-width: 300px;
-    flex-shrink: 0;
-    align-items: stretch;
-}
-
-.bill-item-image-wrapper {
-    width: 100px;
-    min-height: 100px;
-    background: #1E1E1E;
-    border-radius: 4px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    width: 100%;
+    height: 350px;
 }
 
 .bill-item-image {
-    width: 100%;
+    width: 50%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    max-height: 240px;
+    max-width: 200px;
 }
 
-.bill-item-info {
-    flex: 1;
+.carousel-item {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.bill-location {
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 0.2rem;
-    color: #FFFFFF;
-}
-
-.bill-date {
-    font-size: 0.85rem;
-    color: #A0A0A0;
-    /* Secondary Text */
-    margin-bottom: 0.5rem;
+    gap: 2rem;
+    height: 100%;
+    min-height: 270px;
+    max-height: 270px;
+    border: 1px solid var(--input-border-color);
+    min-width: 450px;
+    max-width: 450px;
+    padding: 1rem;
+    margin: 0 0 0 25px;
+    border-radius: var(--radius-sm);
+    background-color: var(--input-background);
 }
 
 .bill-item-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
 }
 
-/* Button styles and fonts moved to SplitForm.css */
+.bill-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.carousel-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: space-between;
+}

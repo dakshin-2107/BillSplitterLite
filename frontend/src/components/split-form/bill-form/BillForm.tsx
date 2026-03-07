@@ -1,5 +1,9 @@
 import React, { useState, useRef, type ChangeEvent, useEffect } from 'react';
 import './BillForm.css';
+import { FieldLabel, FieldLegend, FieldSet, Field } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/datepicker';
 
 interface Bill {
     location: string;
@@ -33,10 +37,6 @@ const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
         }
     };
 
-    const handleUploadClick = () => {
-        fileInputRef.current?.click();
-    };
-
     const handleReset = () => {
         setLocation('');
         setDate('');
@@ -58,66 +58,76 @@ const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
     }, [date, location, image]);
 
     return (
-        <div className="bill-form">
-            <div className="form-group">
-                <label>Location :</label>
-                <input
-                    type="text"
-                    placeholder="Dunder Mifflin"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                />
-            </div>
-
-            <div className="form-group">
-                <label>Date :</label>
-                <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    placeholder="DD/MM/YYYY"
-                />
-            </div>
-
-            <div className="bill-image-group">
-                <label>Bill image :</label>
-                <div className="upload-container" onClick={handleUploadClick}>
-                    {imagePreview ? (
-                        <img src={imagePreview} alt="Bill Preview" className="image-preview" />
-                    ) : (
-                        <div className="upload-placeholder">
-                            <span className="plus-icon">+</span>
-                            <p className="upload-text">Click to upload<br />the image of a bill</p>
-                        </div>
-                    )}
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="file-input"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                </div>
-            </div>
-
-            <div className="form-actions">
-                <button
-                    className="btn-reset"
-                    onClick={handleReset}
-                    disabled={showResetButton}
-                >
-                    Reset
-                </button>
-                <button
-                    className="btn-add-bill"
-                    onClick={handleAddBill}
-                    disabled={showAddBillButton}
-                >
-                    Add bill
-                </button>
-            </div>
-        </div>
+        <div className='bill-form'>
+            <form>
+                <FieldSet>
+                    <FieldLegend>Bill Details</FieldLegend>
+                    <Field>
+                        <FieldLabel htmlFor="bill-location">
+                            Location
+                        </FieldLabel>
+                        <Input
+                            id='bill-location'
+                            type='text'
+                            placeholder="Dunder Mifflin"
+                            required
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                        />
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="bill-date">
+                            Date
+                        </FieldLabel>
+                        <DatePicker
+                            required
+                            value={date}
+                            onDateChange={setDate}
+                        />
+                    </Field>
+                    <Field>
+                        <FieldLabel htmlFor="bill-image">
+                            Bill image
+                        </FieldLabel>
+                        {imagePreview ? (
+                            <img src={imagePreview} alt="Bill Preview" className="image-preview" />
+                        ) : (
+                            <>
+                                <label htmlFor="image-input" className="image-preview flex items-center justify-center">
+                                    <span>Click to upload the bill</span>
+                                </label>
+                                <Input
+                                    required
+                                    id='image-input'
+                                    className="image-input"
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                            </>
+                        )}
+                    </Field>
+                    <div className="form-actions">
+                        <Button
+                            variant="destructive"
+                            onClick={handleReset}
+                            disabled={showResetButton}
+                        >
+                            Reset
+                        </Button>
+                        <Button
+                            onClick={handleAddBill}
+                            disabled={showAddBillButton}
+                        >
+                            Add bill
+                        </Button>
+                    </div>
+                </FieldSet>
+            </form>
+        </div >
     );
+
 }
 
 export default BillForm;

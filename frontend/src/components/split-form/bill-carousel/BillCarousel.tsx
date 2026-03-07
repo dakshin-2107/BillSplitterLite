@@ -1,6 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { BillFormData, SplitFormData } from '../../../common/interfaces';
 import './BillCarousel.css';
+import { CarouselItem, Carousel, CarouselPrevious, CarouselNext, CarouselContent } from '@/components/ui/carousel';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger, MyToolTip } from '@/components/ui/tooltip';
 
 interface BillCarouselProps {
     splitFormData: SplitFormData;
@@ -19,31 +22,38 @@ interface BillCarouselItemProps {
 }
 
 const BillCarouselItem: React.FC<BillCarouselItemProps> = ({ index, billFormData, onClickDeleteBill, onClickEditBill }) => {
-    const { location, date, image } = billFormData;
 
-    // Create preview URL if image exists
+    const { location, date, image } = billFormData;
     const imageSync = image ? URL.createObjectURL(image) : null;
 
     return (
-        <div className="bill-carousel-item">
-            <div className="bill-item-image-wrapper">
-                {imageSync ? (
-                    <img src={imageSync} alt="Bill" className="bill-item-image" />
-                ) : (
-                    <span style={{ fontSize: '0.7rem', color: '#666' }}>bill image</span>
-                )}
-            </div>
-            <div className="bill-item-info">
-                <div>
-                    <p className="bill-location">{location || 'Pizza by alfredo\'s'}</p>
-                    <p className="bill-date">{date || '25th Dec, 2025'}</p>
+        <>
+            <CarouselItem className='carousel-item'>
+                {imageSync ? (<img src={imageSync} alt="Bill" className="bill-item-image" />)
+                    : (<span style={{ fontSize: '0.7rem', color: '#666' }}>bill image</span>)}
+                <div className="bill-item-info">
+                    <div>
+                        <p className="bill-location">{location || 'Pizza by alfredo\'s'}</p>
+                        <p className="bill-date">{date || '25th Dec, 2025'}</p>
+                    </div>
+                    <div className="bill-item-actions">
+                        {/* <Button
+                            onClick={() => onClickEditBill(index)}
+                            size="lg"
+                        >
+                            Edit
+                        </Button> */}
+                        <Button
+                            variant="destructive"
+                            onClick={() => onClickDeleteBill(index)}
+                            size="lg"
+                        >
+                            Delete
+                        </Button>
+                    </div>
                 </div>
-                <div className="bill-item-actions">
-                    <button className="btn-add-bill" onClick={() => onClickEditBill(index)}>Edit</button>
-                    <button className="btn-reset" onClick={() => onClickDeleteBill(index)}>Delete</button>
-                </div>
-            </div>
-        </div>
+            </CarouselItem>
+        </>
     )
 }
 
@@ -59,17 +69,6 @@ const BillCarousel: React.FC<BillCarouselProps> = ({
     const [showResetButton, setShowResetButton] = useState(false);
     const [showStartSessionButton, setShowStartSessionButton] = useState(false);
 
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    const scroll = (direction: 'left' | 'right') => {
-        if (scrollRef.current) {
-            const scrollAmount = 300;
-            scrollRef.current.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-        }
-    };
 
     useEffect(() => {
         setShowResetButton(splitFormData.billData.length > 0 ? true : false);
@@ -77,13 +76,10 @@ const BillCarousel: React.FC<BillCarouselProps> = ({
     }, [splitFormData]);
 
     return (
-        <div className="bill-carousel-container">
-            {/* <h2 className="carousel-title">Bills in this split :</h2> */}
-            <div className="carousel-wrapper">
-                <button className="nav-button" onClick={() => scroll('left')}>
-                    ←
-                </button>
-                <div className="bill-items-list" ref={scrollRef}>
+        <div className='bill-carousel-container'>
+            <Carousel className='bill-carousel-wrapper'>
+                <CarouselPrevious className='left-2 bg-input-background' />
+                <CarouselContent>
                     {splitFormData.billData.length > 0 ? (
                         splitFormData.billData.map((bill, index) => (
                             <BillCarouselItem
@@ -97,27 +93,28 @@ const BillCarousel: React.FC<BillCarouselProps> = ({
                     ) : (
                         <p style={{ color: '#666', padding: '1rem' }}>No bills added yet...</p>
                     )}
-                </div>
-                <button className="nav-button" onClick={() => scroll('right')}>
-                    →
-                </button>
-            </div>
-
+                </CarouselContent>
+                <CarouselNext className='right-2 bg-input-background' />
+            </Carousel>
             <div className="carousel-actions">
-                <button
-                    className="btn-reset-all btn-reset"
-                    onClick={onResetAll}
-                    disabled={isSubmitting || !showResetButton}
-                >
-                    Reset all
-                </button>
-                <button
-                    className="btn-start-session"
-                    onClick={onStartSession}
-                    disabled={isSubmitting || !showStartSessionButton}
-                >
-                    {isSubmitting ? 'Starting...' : 'Start split session'}
-                </button>
+                <MyToolTip toolTipText="Deletes all uploaded bills">
+                    <Button
+                        variant="destructive"
+                        onClick={onResetAll}
+                        disabled={isSubmitting || !showResetButton}
+                    >
+                        Delete all
+                    </Button>
+                </MyToolTip>
+
+                <MyToolTip toolTipText="Start a new session to split all bills">
+                    <Button
+                        onClick={onStartSession}
+                        disabled={isSubmitting || !showStartSessionButton}
+                    >
+                        {isSubmitting ? 'Starting...' : 'Start split session'}
+                    </Button>
+                </MyToolTip>
             </div>
         </div>
     )

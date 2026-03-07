@@ -5,18 +5,21 @@ import JoinSession from './components/JoinSession'
 import Ping from './components/debug/ping'
 import Header from './components/common/header'
 import Footer from './components/common/footer'
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 function App() {
   return (
     <div className="app-layout">
       <Header />
-      <main className="main-content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/join/:billId" element={<JoinSession />} />
-          <Route path="/ping" element={<Ping />} />
-        </Routes>
-      </main>
+      <TooltipProvider>
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/join/:billId" element={<JoinSession />} />
+            <Route path="/ping" element={<Ping />} />
+          </Routes>
+        </main>
+      </TooltipProvider>
       <Footer />
     </div>
   )
