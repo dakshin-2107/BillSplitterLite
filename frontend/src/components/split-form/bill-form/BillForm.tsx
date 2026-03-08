@@ -1,61 +1,45 @@
-import React, { useState, useRef, type ChangeEvent, useEffect } from 'react';
+import { useState, useRef, type ChangeEvent } from 'react';
 import './BillForm.css';
 import { FieldLabel, FieldLegend, FieldSet, Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datepicker';
-
-interface Bill {
-    location: string;
-    date: string;
-    image: File;
-}
+import type { BillFormData } from '../../../common/interfaces';
 
 interface BillFormProps {
-    onAddBill: (bill: Bill) => void;
+    setNewBill: (bill: BillFormData | null) => void;
 }
 
-const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
+const BillForm = ({ setNewBill }: BillFormProps) => {
     const [location, setLocation] = useState('');
     const [date, setDate] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [showResetButton, setShowResetButton] = useState(false);
-    const [showAddBillButton, setShowAddBillButton] = useState(false);
-
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
+        if (!file) return;
+        if (imagePreview) URL.revokeObjectURL(imagePreview);
+        setImage(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
-    const handleReset = () => {
+    const reset = () => {
         setLocation('');
         setDate('');
         setImage(null);
+        if (imagePreview) URL.revokeObjectURL(imagePreview);
         setImagePreview(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleAddBill = () => {
+    const handleSubmit = () => {
         if (location && date && image) {
-            onAddBill({ location, date, image });
-            handleReset();
+            setNewBill({ location, date, image });
+            reset();
         }
     };
-
-    useEffect(() => {
-        setShowResetButton((date || location || image) ? false : true);
-        setShowAddBillButton((date && location && image) ? false : true);
-    }, [date, location, image]);
 
     return (
         <div className='bill-form'>
@@ -63,9 +47,7 @@ const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
                 <FieldSet>
                     <FieldLegend>Bill Details</FieldLegend>
                     <Field>
-                        <FieldLabel htmlFor="bill-location">
-                            Location
-                        </FieldLabel>
+                        <FieldLabel htmlFor="bill-location">Location</FieldLabel>
                         <Input
                             id='bill-location'
                             type='text'
@@ -76,19 +58,11 @@ const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
                         />
                     </Field>
                     <Field>
-                        <FieldLabel htmlFor="bill-date">
-                            Date
-                        </FieldLabel>
-                        <DatePicker
-                            required
-                            value={date}
-                            onDateChange={setDate}
-                        />
+                        <FieldLabel htmlFor="bill-date">Date</FieldLabel>
+                        <DatePicker required value={date} onDateChange={setDate} />
                     </Field>
-                    <Field>
-                        <FieldLabel htmlFor="bill-image">
-                            Bill image
-                        </FieldLabel>
+                    <Field className="image-field">
+                        <FieldLabel htmlFor="bill-image">Bill image</FieldLabel>
                         {imagePreview ? (
                             <img src={imagePreview} alt="Bill Preview" className="image-preview" />
                         ) : (
@@ -110,24 +84,25 @@ const BillForm: React.FC<BillFormProps> = ({ onAddBill }) => {
                     </Field>
                     <div className="form-actions">
                         <Button
+                            type="button"
                             variant="destructive"
-                            onClick={handleReset}
-                            disabled={showResetButton}
+                            onClick={reset}
+                            disabled={!(location || date || image)}
                         >
                             Reset
                         </Button>
                         <Button
-                            onClick={handleAddBill}
-                            disabled={showAddBillButton}
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={!(location && date && image)}
                         >
                             Add bill
                         </Button>
                     </div>
                 </FieldSet>
             </form>
-        </div >
+        </div>
     );
-
-}
+};
 
 export default BillForm;

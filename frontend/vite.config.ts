@@ -12,6 +12,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@utils": path.resolve(__dirname, "./src/common"),
+      "@comp": path.resolve(__dirname, "./src/components"),
+      "@ui": path.resolve(__dirname, "./src/components/ui"),
+      "@common": path.resolve(__dirname, "./src/components/common"),
+      "@split-form": path.resolve(__dirname, "./src/components/split-form"),
     },
   }
 })

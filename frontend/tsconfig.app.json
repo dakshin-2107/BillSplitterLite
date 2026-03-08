@@ -30,9 +30,12 @@
     /* Paths */
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@utils/*": ["./src/common/*"],
+      "@comp/*": ["./src/components/*"],
+      "@ui/*": ["./src/components/ui/*"],
+      "@common/*": ["./src/components/common/*"],
+      "@split-form/*": ["./src/components/split-form/*"]
     }
   },
   "include": [

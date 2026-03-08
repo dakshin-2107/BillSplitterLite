@@ -1,7 +1,8 @@
 .bill-carousel-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .bill-carousel-wrapper {
@@ -9,34 +10,37 @@
     background: var(--carousel-background-color);
     border: 1px solid var(--input-border-color);
     border-radius: var(--radius-sm);
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
-    height: 350px;
+    height: 100%;
 }
 
 .bill-item-image {
-    width: 50%;
+    flex-shrink: 0;
+    width: 45%;
     height: 100%;
     object-fit: contain;
-    max-height: 240px;
-    max-width: 200px;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-input-background);
 }
 
 .carousel-item {
-    display: flex;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: 45% 1fr;
+    gap: 1.5rem;
     height: 100%;
-    min-height: 270px;
-    max-height: 270px;
+    min-height: 220px;
     border: 1px solid var(--input-border-color);
-    min-width: 450px;
-    max-width: 450px;
     padding: 1rem;
+    max-width: 350px;
     margin: 0 0 0 25px;
     border-radius: var(--radius-sm);
     background-color: var(--input-background);
+    box-sizing: border-box;
+}
+
+.bill-item-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .bill-item-actions {
@@ -44,15 +48,6 @@
     gap: 1rem;
 }
 
-.bill-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.carousel-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
-    justify-content: space-between;
+.carousel-item:last-child {
+    margin-right: 100px;
 }

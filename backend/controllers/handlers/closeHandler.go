@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+Purpose:
+- deletes the cookies that represent the users session
+*/
 type CloseHandler struct {
 	common.SessionRouteHandlerBase
 }

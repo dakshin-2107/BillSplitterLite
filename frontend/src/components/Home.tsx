@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
 import './components.css';
-import SplitForm from './split-form/SplitForm';
+import React, { useState, useEffect } from 'react';
+import SplitForm from '@split-form/SplitForm';
 import SplitGrid from './split-grid/SplitGrid';
-import { type SplitData, type ApiResponse } from '../common/interfaces';
-import { URLProvider } from '../common/urlProvider';
+import { type SplitData, type ApiResponse } from '@utils/interfaces';
+import { URLProvider } from '@utils/urlProvider';
+import { toast } from 'sonner';
+import { Toaster } from '@ui/sonner';
 
 const Home: React.FC = () => {
     const [splitData, setSplitData] = useState<SplitData | null>(null);
-    const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     // checks for existing session
@@ -48,16 +49,13 @@ const Home: React.FC = () => {
         checkExistingSession();
     }, []);
 
-    // Handle successful form submission
     const handleFormSuccess = (data: SplitData) => {
         setSplitData(data);
-        setError(null);
+        toast.success('Session started successfully');
     };
 
-    // Handle form submission error
     const handleFormError = (errorMessage: string) => {
-        setError(errorMessage);
-        setSplitData(null);
+        toast.error(errorMessage);
     };
 
     // If we have split data, show the SplitGrid
@@ -72,16 +70,13 @@ const Home: React.FC = () => {
     // Show the form by default
     return (
         <div className="home-container">
+            <Toaster />
             {isLoading && (
                 <div className="loading-overlay">
                     <div className="loading-spinner">Restoring session...</div>
                 </div>
             )}
-            {error && (
-                <div className="error-banner">
-                    <p>{error}</p>
-                </div>
-            )}
+
             <SplitForm
                 onSubmitSuccess={handleFormSuccess}
                 onSubmitError={handleFormError}

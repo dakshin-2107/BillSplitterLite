@@ -1,174 +1,97 @@
-import React, { useState, useEffect, useRef } from 'react';
 import './SplitForm.css';
-import type { ApiResponse, SplitData, BillFormData, SplitFormData } from '../../common/interfaces';
-import { URLProvider } from '../../common/urlProvider';
-import { storageUtils } from '../../common/storageUtils';
-import BillCarousel from './bill-carousel/BillCarousel';
-import BillForm from './bill-form/BillForm';
-import PeoplePanel from './people-panel/PeoplePanel';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
+import type { BillFormData, ApiResponse, SplitData } from '@utils/interfaces';
+import BillCarousel from '@split-form/bill-carousel/BillCarousel';
+import BillForm from '@split-form/bill-form/BillForm';
+import PeoplePanel from '@split-form/people-panel/PeoplePanel';
+import { Button } from '@ui/button';
+import { Spinner } from '@ui/spinner';
+import { URLProvider } from '@utils/urlProvider';
 
 interface SplitFormProps {
-    onSubmitSuccess: (splitData: SplitData) => void;
-    onSubmitError: (error: string) => void;
+    onSubmitSuccess: (data: SplitData) => void;
+    onSubmitError: (message: string) => void;
 }
 
-const SplitForm: React.FC<SplitFormProps> = ({ onSubmitSuccess, onSubmitError }) => {
-
-    const [splitFormData, setSplitFormData] = useState<SplitFormData>({
-        billData: [],
-        peopleList: [],
-    });
-
+const SplitForm = ({ onSubmitSuccess, onSubmitError }: SplitFormProps) => {
+    const [newBill, setNewBill] = useState<BillFormData | null>(null);
+    const [editBill, setEditBill] = useState<BillFormData | null>(null);
+    const [bills, setBills] = useState<BillFormData[]>([]);
+    const [people, setPeople] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const isInitialMount = useRef(true);
 
-    // Load draft on mount
     useEffect(() => {
-        const loadDraft = async () => {
-            try {
-                const draft = await storageUtils.getDraft();
-                if (draft) {
-                    setSplitFormData(draft);
-                }
-            } catch (err) {
-                console.error("Failed to load draft:", err);
-            }
-        };
-        loadDraft();
-    }, []);
+        if (!newBill) return;
+        setBills(prev => [...prev, newBill]);
+        setNewBill(null);
+    }, [newBill]);
 
-    // Save draft on changes
-    useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
-        }
-
-        const saveDraft = async () => {
-            try {
-                await storageUtils.saveDraft(splitFormData);
-            } catch (err) {
-                console.error("Failed to save draft:", err);
-            }
-        };
-        saveDraft();
-    }, [splitFormData]);
-
-    // bill form stuff
-    const handleAddBill = (bill: BillFormData) => {
-        setSplitFormData((prev: SplitFormData) => ({
-            ...prev,
-            billData: [...prev.billData, bill]
-        }));
-    };
-
-    // bill carousel stuff 
-    const handleEditBill = (index: number) => {
-        console.log('Edit bill at index:', index);
-    };
-
-    const handleDeleteBill = (index: number) => {
-        setSplitFormData((prev: SplitFormData) => ({
-            ...prev,
-            billData: prev.billData.filter((_, i) => i !== index)
-        }));
-    };
-
-    const handleResetAll = () => {
-        setSplitFormData((prev: SplitFormData) => ({
-            ...prev,
-            billData: [],
-            peopleList: [] // Clear people too on reset
-        }));
-        storageUtils.clearDraft();
-    };
-
-
-    // people panel stuff
-    const handleSetPeople = (people: string[]) => {
-        setSplitFormData((prev: SplitFormData) => ({
-            ...prev,
-            peopleList: people
-        }));
-    };
-
-    // split form stuff
     const handleStartSession = async () => {
-        setError(null);
-        if (splitFormData.billData.length === 0) {
-            setError('Please add at least one bill');
-            return;
-        }
-        if (splitFormData.peopleList.length === 0) {
-            setError('Please add at least one person');
-            return;
-        }
-
         setIsSubmitting(true);
-
         try {
-
-            const submitData = new FormData();
-            splitFormData.peopleList.forEach((person: string) => submitData.append(import.meta.env.VITE_FORM_PEOPLE, person));
-            splitFormData.billData.forEach((bill: BillFormData) => {
-                submitData.append(import.meta.env.VITE_FORM_IMAGES, bill.image);
-                submitData.append(import.meta.env.VITE_FORM_DATES, bill.date);
-                submitData.append(import.meta.env.VITE_FORM_LOCATIONS, bill.location);
+            const formData = new FormData();
+            bills.forEach(bill => {
+                formData.append(import.meta.env.VITE_FORM_IMAGES, bill.image);
+                formData.append(import.meta.env.VITE_FORM_DATES, bill.date);
+                formData.append(import.meta.env.VITE_FORM_LOCATIONS, bill.location);
+            });
+            people.forEach(person => {
+                formData.append(import.meta.env.VITE_FORM_PEOPLE, person);
             });
 
-            console.log('Submit data:', Array.from(submitData.entries()));
-
-            const apiUrl = URLProvider.getHomeUrl();
-            const response = await fetch(apiUrl, {
+            const res = await fetch(URLProvider.getHomeUrl(), {
                 method: 'POST',
-                body: submitData,
                 credentials: 'include',
+                body: formData,
             });
 
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.statusText}`);
-            }
-
-            const result: ApiResponse = await response.json();
-            if (result.success && result.split) {
-                // Clear draft on success before calling onSubmitSuccess
-                await storageUtils.clearDraft();
-                onSubmitSuccess(result.split);
+            const json: ApiResponse = await res.json();
+            if (json.success && json.split) {
+                onSubmitSuccess(json.split);
             } else {
-                throw new Error(result.message || 'Failed to process session');
+                onSubmitError(json.message);
             }
-
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to start session';
-            setError(errorMessage);
-            onSubmitError(errorMessage);
+        } catch (e) {
+            onSubmitError(e instanceof Error ? e.message : 'Request failed');
         } finally {
             setIsSubmitting(false);
         }
     };
 
+    const handleResetAll = () => {
+        setBills([]);
+        setPeople([]);
+        setNewBill(null);
+    };
+
     return (
         <div className="split-form-container">
-            <BillCarousel
-                splitFormData={splitFormData}
-                onClickDeleteBill={handleDeleteBill}
-                onClickEditBill={handleEditBill}
-                onStartSession={handleStartSession}
-                onResetAll={handleResetAll}
-                isSubmitting={isSubmitting}
-            />
-
+            <BillCarousel bills={bills} setBills={setBills} setEditBill={setEditBill} />
             <div className="main-content-grid">
-                <BillForm onAddBill={handleAddBill} />
-                <PeoplePanel
-                    people={splitFormData.peopleList}
-                    setPeople={handleSetPeople}
-                />
+                <BillForm setNewBill={setNewBill} />
+                <div className="people-panel-column">
+                    <div className="people-panel-actions">
+                        {isSubmitting
+                            ? <>
+                                <Spinner className="size-10 m-auto mb-5 mt-5" />
+                            </>
+                            : <>
+                                <Button type="button" variant="destructive" onClick={handleResetAll} disabled={isSubmitting}>
+                                    Reset all
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={handleStartSession}
+                                    disabled={!bills.length || !people.length}
+                                >
+                                    Start session
+                                </Button>
+                            </>
+                        }
+                    </div>
+                    <PeoplePanel people={people} setPeople={setPeople} />
+                </div>
             </div>
-
-            {error && <p style={{ color: '#ff4444', textAlign: 'center', marginTop: '1rem' }}>{error}</p>}
         </div>
     );
 };
