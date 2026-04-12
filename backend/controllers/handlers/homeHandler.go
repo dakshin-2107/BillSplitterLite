@@ -54,8 +54,8 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 
 		newSplit := h.ModelHelper.CreateNewSplit()
 
-		//err := h.ParseItemsFromImage(images, newSplit)
-		err := h.ParseItemsFromImageDummy(images, newSplit)
+		err := h.ParseItemsFromImage(images, newSplit)
+		//err := h.ParseItemsFromImageDummy(images, newSplit)
 
 		if err != nil || len(newSplit.Bills) != len(images) {
 			h.Logger.InfoLog(fmt.Sprintf("Failed to parse bill with err: %v", err))

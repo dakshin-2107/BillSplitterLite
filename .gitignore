@@ -7,3 +7,5 @@ backend/.env
 .vscode/launch.json
 design
 .claude
+
+.DS_store
