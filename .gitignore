@@ -9,3 +9,6 @@ design
 .claude
 
 .DS_store
+
+*/.claude
+CLAUDE.md

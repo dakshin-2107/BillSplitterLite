@@ -69,11 +69,32 @@ export const SocketContextComponent = ({ children, setSplitData, setTallyData }:
                 itemId: 0
             });
         },
-        onClose: () => {
-            console.log('WebSocket disconnected');
+        onClose: (event) => {
+            console.warn('[WebSocket] Connection closed', {
+                timestamp: new Date().toISOString(),
+                code: event.code,
+                reason: event.reason || '(no reason provided)',
+                wasClean: event.wasClean,
+            });
         },
-        onError: (error) => {
-            console.error('WebSocket error:', error);
+        onError: (event) => {
+            const ws = event.target as WebSocket;
+            const readyStateMap: Record<number, string> = {
+                0: 'CONNECTING',
+                1: 'OPEN',
+                2: 'CLOSING',
+                3: 'CLOSED',
+            };
+            console.error('[WebSocket] Error event fired', {
+                timestamp: new Date().toISOString(),
+                // WebSocket state at the time of the error
+                readyState: readyStateMap[ws?.readyState] ?? ws?.readyState,
+                url: ws?.url,
+                protocol: ws?.protocol || '(none)',
+                // The error event itself carries no message — the close event
+                // that follows will have the code and reason.
+                note: 'A close event with a code/reason should follow immediately.',
+            });
         }
     }
 

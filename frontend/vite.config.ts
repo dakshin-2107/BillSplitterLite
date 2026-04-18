@@ -7,7 +7,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    allowedHosts: ["splitzo.dak-shin.com"]
+    allowedHosts: ["splitzy.dak-shin.com"]
   },
   resolve: {
     alias: {
