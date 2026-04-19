@@ -10,6 +10,7 @@ import (
 // TODO : if there is no new messages from Broadcast channel for more than 15mins, then we delete the session
 func (s *SplitSession) RunPublisherService() {
 	for {
+
 		select {
 		case action := <-s.SignalChannel:
 			if action.ActionType == common.BYE_BYE {
@@ -24,6 +25,49 @@ func (s *SplitSession) RunPublisherService() {
 	}
 }
 
+func computeBillShare(bill common.Bill) common.BillShare {
+	billShare := common.BillShare{
+		BillName:   bill.Location + " - " + bill.Date,
+		UserShares: make(map[string]common.UserShare),
+		BillTotal:  0,
+	}
+
+	for _, item := range bill.Items {
+		totalShares := 0
+		for _, count := range item.Takers {
+			totalShares += count
+		}
+		if totalShares == 0 {
+			continue
+		}
+
+		sharePrice := item.Price / float32(totalShares)
+		for takerId, count := range item.Takers {
+			share := sharePrice * float32(count)
+
+			us := billShare.UserShares[takerId]
+			if us.ItemShares == nil {
+				us.ItemShares = make(map[string]float32)
+			}
+			us.ItemShares[item.Name] = share
+			us.UserShareTotal += share
+			billShare.UserShares[takerId] = us
+
+			billShare.BillTotal += share
+		}
+	}
+
+	return billShare
+}
+
+func recalcTotal(shares map[int]common.BillShare) float32 {
+	var total float32
+	for _, bs := range shares {
+		total += bs.BillTotal
+	}
+	return total
+}
+
 func (sess *SplitSession) RunTallyService() {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
@@ -35,86 +79,44 @@ func (sess *SplitSession) RunTallyService() {
 				return
 			}
 		case <-ticker.C:
-			if !sess.RequiresNewTally.Load() {
+			requiresFull := sess.RequiresNewTally.Load()
+			dirtyBills := sess.GetAndClearDirtyBills()
+
+			if !requiresFull && len(dirtyBills) == 0 {
 				continue
 			}
-			// Get the current split (containing all bills)
-			split, err := sess.ModelHelper.GetSplit(sess.SplitID)
-			if err != nil {
-				continue
-			}
 
-			// Initialize Tally
-			tally := common.Tally{
-				UserShares:  make(map[string]common.UserShare),
-				BillNameMap: make(map[int]string),
-				ActualTotal: 0,
-			}
+			if requiresFull {
+				split, err := sess.ModelHelper.GetSplit(sess.SplitID)
+				if err != nil {
+					continue
+				}
 
-			// Accumulate across all bills
-			for _, bill := range split.Bills {
-				tally.ActualTotal += bill.TotalAmount
-				currBillId := bill.BillID
-				tally.BillNameMap[currBillId] = bill.Location + " - " + bill.Date
+				tally := common.Tally{BillShares: make(map[int]common.BillShare)}
+				for _, bill := range split.Bills {
+					tally.BillShares[bill.BillID] = computeBillShare(bill)
+				}
+				tally.CalculatedTotal = recalcTotal(tally.BillShares)
 
-				// For each item, divide price by number of takers
-				for _, item := range bill.Items {
-					totalSharesInItem := 0
-					for _, sharesCount := range item.Takers {
-						totalSharesInItem += sharesCount
-					}
+				sess.RequiresNewTally.Store(false)
+				fmt.Println("Publishing full tally")
+				sess.BroadcastChannel <- common.TallyResponse(tally)
 
-					if totalSharesInItem == 0 {
+			} else {
+				// Partial recompute — fetch only dirty bills, let frontend merge into its tally cache
+				dirtyBillShares := make(map[int]common.BillShare)
+				for _, billId := range dirtyBills {
+					bill, err := sess.ModelHelper.GetBill(sess.SplitID, billId)
+					if err != nil {
 						continue
 					}
-
-					sharePrice := item.Price / float32(totalSharesInItem)
-
-					for takerId, sharesCount := range item.Takers {
-						shareForThisItem := sharePrice * float32(sharesCount)
-
-						userShare, ok := tally.UserShares[takerId]
-						if !ok {
-							userShare = common.UserShare{
-								BillShares:     make(map[int]common.BillShare),
-								UserShareTotal: 0.0,
-							}
-						}
-
-						billShare, ok := userShare.BillShares[currBillId]
-						if !ok {
-							billShare = common.BillShare{
-								ItemShares:     make(map[string]float32),
-								BillShareTotal: 0.0,
-							}
-						}
-
-						billShare.ItemShares[item.Name] = shareForThisItem
-						billShare.BillShareTotal += shareForThisItem
-						userShare.BillShares[currBillId] = billShare
-
-						userShare.UserShareTotal += shareForThisItem
-						tally.UserShares[takerId] = userShare
-					}
+					dirtyBillShares[billId] = computeBillShare(*bill)
+				}
+				if len(dirtyBillShares) > 0 {
+					fmt.Printf("Publishing partial tally (dirty bills: %v)\n", dirtyBills)
+					sess.BroadcastChannel <- common.BillTallyResponse(dirtyBillShares)
 				}
 			}
-
-			// Calculate total and difference
-			tally.CalculatedTotal = 0.0
-			for _, us := range tally.UserShares {
-				tally.CalculatedTotal += us.UserShareTotal
-			}
-
-			if split.TotalAmount > 0 {
-				tally.ActualTotal = split.TotalAmount
-			}
-
-			tally.TotalDifference = tally.CalculatedTotal - tally.ActualTotal
-
-			// Publish to everyone
-			fmt.Println("Publishing tally: ", tally)
-			sess.RequiresNewTally.Store(false)
-			sess.BroadcastChannel <- common.TallyResponse(tally)
 		}
 	}
 }

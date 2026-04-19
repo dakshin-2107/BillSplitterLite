@@ -97,6 +97,7 @@ const SplitGrid: React.FC<SplitGridProps> = ({ splitData, setSplitData }) => {
                                 tally={tally}
                                 participants={splitData.participants}
                                 splitData={splitData}
+                                activeBillId={activeBillId}
                             />
                         </div>
                     </div>

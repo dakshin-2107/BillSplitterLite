@@ -38,6 +38,7 @@ func main() {
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.SessUriGenerationHandler]),
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.SharedSessionHandler]),
 		utils.CreateHandlerProvider(utils.NewHandler[handlers.LeaveSessionHandler]),
+		utils.CreateHandlerProvider(utils.NewHandler[handlers.ExampleHandler]),
 
 		// route creator
 		utils.CreateHandlerConsumer(utils.NewRouteCreater, new(utils.IRouteCreator)),

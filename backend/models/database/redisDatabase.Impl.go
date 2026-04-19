@@ -259,6 +259,28 @@ func (r *RedisDatabaseConnection) UpdateBillInformation(splitId string, billId i
 	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, billPath+".date", fmt.Sprintf("\"%s\"", newDate)).Err()
 }
 
+func (r *RedisDatabaseConnection) GetBill(splitId string, billId int) (*common.Bill, error) {
+	path := fmt.Sprintf("$.bills.%d", billId)
+	result, err := r.redisClient.Do(r.ctx, "JSON.GET", splitId, path).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var bills []common.Bill
+	switch res := result.(type) {
+	case string:
+		err = json.Unmarshal([]byte(res), &bills)
+	case []byte:
+		err = json.Unmarshal(res, &bills)
+	default:
+		return nil, fmt.Errorf("unexpected type from Redis JSON.GET")
+	}
+	if err != nil || len(bills) == 0 {
+		return nil, fmt.Errorf("bill not found")
+	}
+	return &bills[0], nil
+}
+
 func (r *RedisDatabaseConnection) AddAllTakersToItem(splitId string, billId int, itemId int) error {
 	split, err := r.GetSplit(splitId)
 	if err != nil {
@@ -276,6 +298,3 @@ func (r *RedisDatabaseConnection) AddAllTakersToItem(splitId string, billId int,
 	return nil
 }
 
-func (r *RedisDatabaseConnection) UpdateSplitTotal(splitId string, newTotal float32) error {
-	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, "$.totalAmount", newTotal).Err()
-}

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import './BillPillCarousel.css';
-import type { BillData } from '../../../common/interfaces';
+import type { BillData } from '@utils/interfaces';
+import { formatDate } from '@utils/dateUtils';
 
 interface BillPillCarouselProps {
     bills: Record<number, BillData>;
@@ -41,7 +42,7 @@ export const BillPillCarousel: React.FC<BillPillCarouselProps> = ({
                             onClick={() => onBillSelect(id)}
                         >
                             <span className="pill-location">{bill.location || `Bill ${id}`}</span>
-                            <span className="pill-date">{bill.date}</span>
+                            <span className="pill-date">{bill.date ? formatDate(bill.date) : ''}</span>
                         </div>
                     );
                 })}

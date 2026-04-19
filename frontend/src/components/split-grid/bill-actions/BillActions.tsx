@@ -8,7 +8,7 @@ import { URLProvider } from '../../../common/urlProvider';
 interface ShareBillApiResponse {
     success: boolean;
     message: string;
-    sessionId: string;
+    splitId: string;
 }
 
 const BillActions: React.FC = () => {
@@ -30,8 +30,8 @@ const BillActions: React.FC = () => {
             if (!response.ok) throw new Error('Failed to generate session ID');
 
             const result: ShareBillApiResponse = await response.json();
-            if (result.success && result.sessionId) {
-                const joinLink = `${URLProvider.getSiteOrigin()}/join/${result.sessionId}`;
+            if (result.success && result.splitId) {
+                const joinLink = `${URLProvider.getSiteOrigin()}/join/${result.splitId}`;
                 console.log(`Generated join link : ${joinLink}`);
                 await navigator.clipboard.writeText(joinLink); // doesn't work in HTTP 
                 setShareStatus('copied');

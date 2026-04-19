@@ -18,7 +18,6 @@ type Bill struct {
 type Split struct {
 	SplitID       string            `json:"splitId"`
 	Bills         map[int]Bill      `json:"bills"`
-	TotalAmount   float32           `json:"totalAmount"`
 	Participants  map[string]string `json:"participants"`
 	BillIdCounter int               `json:"billIdCounter"`
 	CreatedAt     time.Time         `json:"createdAt"`
@@ -53,8 +52,8 @@ type ISplitModifier interface {
 	DeleteTakerForItem(splitId string, billId int, itemId int, takerId string) error
 	AddAllTakersToItem(splitId string, billId int, itemId int) error
 
+	GetBill(splitId string, billId int) (*Bill, error)
 	UpdateBillInformation(splitId string, billId int, newTotal float32, newLocation string, newDate string) error
-	UpdateSplitTotal(splitId string, newTotal float32) error
 }
 
 type ISplitModelHelper interface {

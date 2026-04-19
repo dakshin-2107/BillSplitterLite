@@ -21,25 +21,25 @@ func (s *SessionManager) Init(logger logger.ILogger, connUpgrader *websocket.Upg
 	s.SessionDict = make(map[string]*SplitSession)
 }
 
-func (s *SessionManager) GetNewUserSessionId(sessionId string) (string, error) {
+func (s *SessionManager) GetNewUserSessionId(splitID string) (string, error) {
 
-	if session, isPresent := s.getSession(sessionId); isPresent {
+	if session, isPresent := s.getSession(splitID); isPresent {
 		return fmt.Sprintf("%d", session.UserIdCounter), nil
 	}
 
 	return "", fmt.Errorf("no session found")
 }
 
-func (s *SessionManager) GetUserSessionConnection(sessionId string, userID string, ctx *gin.Context) (*websocket.Conn, error) {
+func (s *SessionManager) GetUserSessionConnection(splitID string, userID string, ctx *gin.Context) (*websocket.Conn, error) {
 
-	if sess, isSessionPresent := s.getSession(sessionId); isSessionPresent {
+	if sess, isSessionPresent := s.getSession(splitID); isSessionPresent {
 		if conn, isClientPresent := sess.ClientConnections[userID]; isClientPresent {
 			if pingErr := conn.WriteControl(websocket.PingMessage, []byte{}, time.Now().Add(time.Millisecond*100)); pingErr != nil {
 				conn.Close()
 				delete(sess.ClientConnections, userID)
 				s.logger.DebugLog(fmt.Sprintf("Failed to ping client connection, deleted connection: %v", pingErr))
 
-				return s.GetUserSessionConnection(sessionId, userID, ctx)
+				return s.GetUserSessionConnection(splitID, userID, ctx)
 			}
 
 			return conn, nil
@@ -63,7 +63,7 @@ func (s *SessionManager) GetUserSessionConnection(sessionId string, userID strin
 		}
 
 		sess := &SplitSession{
-			SplitID:           sessionId,
+			SplitID:           splitID,
 			ModelHelper:       s.ModelHelper,
 			ClientConnections: make(map[string]*websocket.Conn),
 			AdminConnection:   wsConn,
@@ -71,6 +71,7 @@ func (s *SessionManager) GetUserSessionConnection(sessionId string, userID strin
 			LastUsed:          time.Now(),
 			BroadcastChannel:  make(chan gin.H, 100),
 			SignalChannel:     make(chan Action, 100),
+			requiresBillTally: make(map[int]bool),
 		}
 		sess.RequiresNewTally.Store(true)
 
@@ -80,24 +81,24 @@ func (s *SessionManager) GetUserSessionConnection(sessionId string, userID strin
 		go sess.RunTallyService()
 
 		// NOTE: benign TOCTOU race — two concurrent first-connects on the same
-		// sessionId could both see isSessionPresent=false and both call setSession.
+		// splitID could both see isSessionPresent=false and both call setSession.
 		// The second write overwrites the first; the orphaned session's goroutines
 		// run until idle eviction (H3). This is pre-existing and statistically negligible.
-		s.setSession(sessionId, sess)
+		s.setSession(splitID, sess)
 
 		return wsConn, nil
 	}
 }
 
-func (s *SessionManager) AddConnection(sessionId string, newConnection *websocket.Conn) error {
+func (s *SessionManager) AddConnection(splitID string, newConnection *websocket.Conn) error {
 
 	return nil
 }
 
-func (s *SessionManager) DeleteSession(sessionId string) error {
+func (s *SessionManager) DeleteSession(splitID string) error {
 	// deleteAndGetSession atomically removes the entry so no concurrent
 	// ExecuteAction or GetUserSessionConnection can observe it after teardown begins.
-	session, isPresent := s.deleteAndGetSession(sessionId)
+	session, isPresent := s.deleteAndGetSession(splitID)
 	if !isPresent {
 		return fmt.Errorf("session not found")
 	}

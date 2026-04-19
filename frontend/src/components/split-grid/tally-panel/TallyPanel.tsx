@@ -1,21 +1,18 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useState } from 'react';
 import './TallyPanel.css';
-import type { Tally, SplitData } from '../../../common/interfaces';
+import type { Tally, SplitData } from '@utils/interfaces';
 import html2canvas from 'html2canvas';
-import { SocketContextProvider } from '../action-manager/SocketContext';
-import { ActionType } from '../../../common/interfaces';
+import { formatDate } from '@utils/dateUtils';
 
 interface TallyPanelProps {
     tally: Tally | null;
     participants: Record<string, string>;
     splitData: SplitData;
+    activeBillId: number;
 }
 
-const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData }) => {
-    const SocketContext = useContext(SocketContextProvider);
+const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData, activeBillId }) => {
     const panelRef = useRef<HTMLDivElement>(null)
-    const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [newTotal, setNewTotal] = useState<number>(splitData.totalAmount);
     const [isCompact, setIsCompact] = useState<boolean>(true);
 
     const handleCopyImage = async () => {
@@ -48,20 +45,9 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData 
         }
     };
 
-    const handleSaveTotal = () => {
-        setIsEditing(false);
-        if (SocketContext) {
-            SocketContext.publishAction({
-                actionId: 0,
-                actionType: ActionType.EDIT_SPLIT_TOTAL,
-                splitId: splitData.splitId,
-                itemId: 0,
-                total: newTotal
-            })
-        }
-    }
+    const billShare = tally?.billShares[activeBillId];
 
-    if (!tally || Object.keys(tally.userShares).length === 0) {
+    if (!tally || !billShare) {
         return (
             <div className="tally-panel empty">
                 <h3>Bill Tally</h3>
@@ -70,8 +56,11 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData 
         );
     }
 
-    console.log("Tally", tally);
-    console.log("User Shares", Object.entries(tally.userShares));
+    const billActualTotal = splitData.bills[activeBillId]?.total ?? 0;
+    const billCalculatedTotal = billShare.billTotal;
+    const billDifference = billCalculatedTotal - billActualTotal;
+
+    const activeBill = splitData.bills[activeBillId];
 
     return (
         <div className="tally-section-container">
@@ -94,80 +83,51 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData 
 
             <div className="tally-panel" ref={panelRef}>
                 <div className="panel-header">
-                    <span className="split-label">Per user split</span>
+                    <div className="bill-info">
+                        <p className="bill-location">{activeBill?.location || `Bill ${activeBillId}`}</p>
+                        <span className="bill-date">{activeBill?.date ? formatDate(activeBill.date) : ''}</span>
+                    </div>
                 </div>
                 <div className="user-shares-list">
-                    {Object.entries(tally.userShares).map(([userId, userShare]) => (
-                        <div key={userId} className="user-share-card">
-                            <div className="user-info">
-                                <span className="user-name">{participants[userId] || userId}</span>
-                                <span className="user-total">{userShare.userShareTotal?.toFixed(2)}</span>
-                            </div>
-                            <div className="bill-shares-list">
-                                {Object.entries(userShare.billShares).map(([billId, billShare]) => (
-                                    <div key={billId} className="bill-share-group">
-                                        <div className="bill-name-header">
-                                            <span className="bill-name">{tally.billNameMap[Number(billId)] || `Bill ${billId}`}</span>
-                                            <span className="bill-share-total">{billShare.billShareTotal?.toFixed(2)}</span>
-                                        </div>
-                                        {!isCompact && (
-                                            <div className="item-breakdown">
-                                                {Object.entries(billShare.itemShares).map(([itemName, amount]) => (
-                                                    <div key={itemName} className="item-share">
-                                                        <span className="item-name">{itemName}</span>
-                                                        <span className="item-amount">{amount.toFixed(2)}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                    <div className="bill-share-card">
+                        <div className="bill-shares-list">
+                            {Object.entries(billShare.userShares).map(([userId, userShare]) => (
+                                <div key={userId} className="user-share-group">
+                                    <div className="user-info">
+                                        <span className="user-name">{participants[userId] || userId}</span>
+                                        <span className="user-total">{userShare.userShareTotal?.toFixed(2)}</span>
                                     </div>
-                                ))}
-                            </div>
+                                    {!isCompact && (
+                                        <div className="item-breakdown">
+                                            {Object.entries(userShare.itemShares).map(([itemName, amount]) => (
+                                                <div key={itemName} className="item-share">
+                                                    <span className="item-name">{itemName}</span>
+                                                    <span className="item-amount">{(amount as number).toFixed(2)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>
-
 
                 <div className="tally-header">
                     <h3></h3>
                     <div className="total-summary">
                         <div className="summary-item actual">
                             <span>Actual (Y):</span>
-                            <div className="edit-total-container">
-                                {isEditing ? (
-                                    <>
-                                        <input
-                                            type="number"
-                                            value={newTotal}
-                                            onChange={(e) => setNewTotal(Number(e.target.value))}
-                                            className="edit-total-input"
-                                            autoFocus
-                                        />
-                                        <button className="inline-action-btn save" onClick={handleSaveTotal} title="Save">
-                                            ✓
-                                        </button>
-                                        <button className="inline-action-btn cancel" onClick={() => setIsEditing(false)} title="Cancel">
-                                            ✕
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button className="edit-trigger" onClick={() => setIsEditing(true)}>
-                                            Edit
-                                        </button>
-                                        <span className="amount">{splitData.totalAmount.toFixed(2)}</span>
-                                    </>
-                                )}
-                            </div>
+                            <span className="amount">{billActualTotal.toFixed(2)}</span>
                         </div>
                         <div className="summary-item">
                             <span>Calculated (X):</span>
-                            <span className="amount">{tally.calculatedTotal.toFixed(2)}</span>
+                            <span className="amount">{billCalculatedTotal.toFixed(2)}</span>
                         </div>
                         <div className="summary-item difference">
                             <span>Difference (X-Y):</span>
-                            <span className={`amount ${tally.totalDifference !== 0 ? 'warning' : 'success'}`}>
-                                {tally.totalDifference.toFixed(2)}
+                            <span className={`amount ${billDifference !== 0 ? 'warning' : 'success'}`}>
+                                {billDifference.toFixed(2)}
                             </span>
                         </div>
                     </div>

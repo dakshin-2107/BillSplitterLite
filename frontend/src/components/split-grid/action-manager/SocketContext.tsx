@@ -3,7 +3,7 @@ import type { SocketProvider, ActionResponse, IAction, SplitData } from "../../.
 import { processAction } from "./ActionUtils";
 import useSocket from "react-use-websocket";
 import type { Options } from "react-use-websocket";
-import type { Tally, TallyResponse, ApiResponse } from "../../../common/interfaces";
+import type { Tally, TallyResponse, BillTallyResponse, ApiResponse } from "../../../common/interfaces";
 import { ActionType } from "../../../common/interfaces";
 import { URLProvider } from "../../../common/urlProvider";
 
@@ -36,12 +36,28 @@ export const SocketContextComponent = ({ children, setSplitData, setTallyData }:
                     return;
                 }
 
-                // tally sync
+                // full tally sync
                 const tallyResponse: TallyResponse = JSON.parse(event.data);
                 if (tallyResponse && tallyResponse.success && tallyResponse.tally) {
-                    console.log("Tally received:", tallyResponse);
+                    console.log("Full tally received:", tallyResponse);
                     setTallyData(tallyResponse.tally);
                     tallyListeners.current.forEach(listener => listener(tallyResponse.tally));
+                    return;
+                }
+
+                // partial tally sync — merge dirty bill shares into cached tally
+                const billTallyResponse: BillTallyResponse = JSON.parse(event.data);
+                if (billTallyResponse && billTallyResponse.success && billTallyResponse.billShares) {
+                    console.log("Partial tally received:", billTallyResponse);
+                    setTallyData(prev => {
+                        if (!prev) return prev;
+                        const merged: Tally = {
+                            ...prev,
+                            billShares: { ...prev.billShares, ...billTallyResponse.billShares }
+                        };
+                        tallyListeners.current.forEach(listener => listener(merged));
+                        return merged;
+                    });
                     return;
                 }
 

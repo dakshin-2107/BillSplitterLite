@@ -43,6 +43,26 @@ type SplitSession struct {
 	BroadcastChannel  chan gin.H
 	SignalChannel     chan Action
 	ModelHelper       common.ISplitModelHelper
+
+	billTallyMu      sync.Mutex
+	requiresBillTally map[int]bool
+}
+
+func (s *SplitSession) MarkBillDirty(billID int) {
+	s.billTallyMu.Lock()
+	defer s.billTallyMu.Unlock()
+	s.requiresBillTally[billID] = true
+}
+
+func (s *SplitSession) GetAndClearDirtyBills() []int {
+	s.billTallyMu.Lock()
+	defer s.billTallyMu.Unlock()
+	dirty := make([]int, 0, len(s.requiresBillTally))
+	for id := range s.requiresBillTally {
+		dirty = append(dirty, id)
+	}
+	s.requiresBillTally = make(map[int]bool)
+	return dirty
 }
 
 // dummy method for now, will remove it if not needed.

@@ -13,6 +13,8 @@ export const URLProvider = {
 
     getCloseUrl: () => `${getBaseUrl()}/${getCloseEndpoint()}`,
 
+    getExampleUrl: () => `${getBaseUrl()}/example`,
+
     getPingUrl: () => `${import.meta.env.VITE_BACKEND_BASE_URL || getBaseUrl()}/ping`,
 
     getSocketUrl: () => `${getWsBaseUrl()}/${getWsActionsEndpoint()}`,

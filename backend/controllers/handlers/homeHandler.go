@@ -54,12 +54,7 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 
 		newSplit := h.ModelHelper.CreateNewSplit()
 
-		var err error
-		if os.Getenv("USE_REAL_LLM") == "true" {
-			err = h.ParseItemsFromImage(images, newSplit)
-		} else {
-			err = h.ParseItemsFromImageDummy(images, newSplit)
-		}
+		err := h.ParseItemsFromImage(images, newSplit)
 
 		if err != nil || len(newSplit.Bills) != len(images) {
 			h.Logger.InfoLog(fmt.Sprintf("Failed to parse bill with err: %v", err))
@@ -76,7 +71,6 @@ func (h *HomeHandler) Handle(ctx *gin.Context) {
 				bill.Location = locations[billId-1]
 				bill.Date = dates[billId-1]
 				newSplit.Bills[billId] = bill
-				newSplit.TotalAmount += bill.TotalAmount
 			}
 
 			// add split to DB
