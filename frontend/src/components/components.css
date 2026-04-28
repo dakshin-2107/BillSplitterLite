@@ -59,7 +59,7 @@
     border: 2px solid rgba(255, 255, 255, 0.5);
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background var(--transition-base), border-color var(--transition-base), transform var(--transition-base);
     backdrop-filter: blur(10px);
     z-index: 100;
 }
@@ -125,7 +125,7 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 

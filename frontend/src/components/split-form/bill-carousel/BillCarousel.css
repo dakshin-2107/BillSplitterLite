@@ -51,3 +51,13 @@
 .carousel-item:last-child {
     margin-right: 100px;
 }
+
+.bill-item-placeholder {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.bill-carousel__empty {
+    color: #666;
+    padding: 1rem;
+}

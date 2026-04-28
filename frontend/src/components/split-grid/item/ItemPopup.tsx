@@ -1,4 +1,7 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { SocketContextProvider } from '../action-manager/SocketContext';
 import { ActionType } from '../../../common/interfaces';
 import './ItemPopup.css';
@@ -8,20 +11,20 @@ interface ItemPopupProps {
     billId: number;
 }
 
-const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, billId }) => {
+const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const socketContext = useContext(SocketContextProvider);
 
     const handleConfirm = () => {
         if (!name || !price) {
-            alert('Please enter both name and price');
+            toast.error('Please enter both name and price');
             return;
         }
 
         const numericPrice = parseFloat(price);
         if (isNaN(numericPrice)) {
-            alert('Please enter a valid price');
+            toast.error('Please enter a valid price');
             return;
         }
 
@@ -29,7 +32,7 @@ const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, billId }) => {
             socketContext.publishAction({
                 actionType: ActionType.ADD_NEW_ITEM,
                 billId: billId,
-                itemId: -1, // backend will generate it or use this
+                itemId: -1,
                 itemName: name,
                 price: numericPrice,
             });
@@ -44,7 +47,7 @@ const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, billId }) => {
                 <h2>Add New Item</h2>
                 <div className="input-group">
                     <label>Item Name</label>
-                    <input
+                    <Input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -54,7 +57,7 @@ const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, billId }) => {
                 </div>
                 <div className="input-group">
                     <label>Item Price</label>
-                    <input
+                    <Input
                         type="number"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
@@ -63,8 +66,8 @@ const ItemPopup: React.FC<ItemPopupProps> = ({ onClose, billId }) => {
                     />
                 </div>
                 <div className="popup-actions">
-                    <button className="popup-btn cancel" onClick={onClose}>Cancel</button>
-                    <button className="popup-btn confirm" onClick={handleConfirm}>Confirm</button>
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button onClick={handleConfirm}>Confirm</Button>
                 </div>
             </div>
         </div>

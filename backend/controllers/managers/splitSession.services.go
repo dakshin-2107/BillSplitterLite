@@ -25,49 +25,6 @@ func (s *SplitSession) RunPublisherService() {
 	}
 }
 
-func computeBillShare(bill common.Bill) common.BillShare {
-	billShare := common.BillShare{
-		BillName:   bill.Location + " - " + bill.Date,
-		UserShares: make(map[string]common.UserShare),
-		BillTotal:  0,
-	}
-
-	for _, item := range bill.Items {
-		totalShares := 0
-		for _, count := range item.Takers {
-			totalShares += count
-		}
-		if totalShares == 0 {
-			continue
-		}
-
-		sharePrice := item.Price / float32(totalShares)
-		for takerId, count := range item.Takers {
-			share := sharePrice * float32(count)
-
-			us := billShare.UserShares[takerId]
-			if us.ItemShares == nil {
-				us.ItemShares = make(map[string]float32)
-			}
-			us.ItemShares[item.Name] = share
-			us.UserShareTotal += share
-			billShare.UserShares[takerId] = us
-
-			billShare.BillTotal += share
-		}
-	}
-
-	return billShare
-}
-
-func recalcTotal(shares map[int]common.BillShare) float32 {
-	var total float32
-	for _, bs := range shares {
-		total += bs.BillTotal
-	}
-	return total
-}
-
 func (sess *SplitSession) RunTallyService() {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
@@ -119,4 +76,47 @@ func (sess *SplitSession) RunTallyService() {
 			}
 		}
 	}
+}
+
+func computeBillShare(bill common.Bill) common.BillShare {
+	billShare := common.BillShare{
+		BillName:   bill.Location + " - " + bill.Date,
+		UserShares: make(map[string]common.UserShare),
+		BillTotal:  0,
+	}
+
+	for _, item := range bill.Items {
+		totalShares := 0
+		for _, count := range item.Takers {
+			totalShares += count
+		}
+		if totalShares == 0 {
+			continue
+		}
+
+		sharePrice := item.Price / float32(totalShares)
+		for takerId, count := range item.Takers {
+			share := sharePrice * float32(count)
+
+			us := billShare.UserShares[takerId]
+			if us.ItemShares == nil {
+				us.ItemShares = make(map[string]float32)
+			}
+			us.ItemShares[item.Name] = share
+			us.UserShareTotal += share
+			billShare.UserShares[takerId] = us
+
+			billShare.BillTotal += share
+		}
+	}
+
+	return billShare
+}
+
+func recalcTotal(shares map[int]common.BillShare) float32 {
+	var total float32
+	for _, bs := range shares {
+		total += bs.BillTotal
+	}
+	return total
 }

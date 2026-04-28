@@ -57,6 +57,9 @@
   --button-hover-color: #6e47ee;
   --button-destructive-color: #c31921;
   --button-destructive-color-hover: #ff000d;
+  --color-focus-ring: #BB86FC;
+  --transition-base: 0.2s ease;
+  --transition-fast: 0.15s ease;
 
   --input-height: 52px;
   --input-button: 50px;

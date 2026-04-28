@@ -1,9 +1,20 @@
-import React from 'react';
-import './BillActions.css';
-import { SocketContextProvider } from '../action-manager/SocketContext';
 import { useContext, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogAction,
+    AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
+import { SocketContextProvider } from '../action-manager/SocketContext';
 import { ActionType } from '../../../common/interfaces';
 import { URLProvider } from '../../../common/urlProvider';
+import './BillActions.css';
 
 interface ShareBillApiResponse {
     success: boolean;
@@ -11,9 +22,17 @@ interface ShareBillApiResponse {
     splitId: string;
 }
 
-const BillActions: React.FC = () => {
+const STATUS_RESET_DELAY_MS = 3000;
+
+const SHARE_LABEL: Record<string, string> = {
+    idle: 'Share Bill',
+    copying: 'Generating...',
+    copied: 'Link Copied!',
+    error: 'Retry Share',
+};
+
+const BillActions = () => {
     const socketContext = useContext(SocketContextProvider);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle');
 
     const handleShareBill = async () => {
@@ -24,7 +43,7 @@ const BillActions: React.FC = () => {
             const generateUrl = URLProvider.getGenerateUrl();
             const response = await fetch(generateUrl, {
                 method: 'GET',
-                credentials: 'include'
+                credentials: 'include',
             });
 
             if (!response.ok) throw new Error('Failed to generate session ID');
@@ -32,72 +51,57 @@ const BillActions: React.FC = () => {
             const result: ShareBillApiResponse = await response.json();
             if (result.success && result.splitId) {
                 const joinLink = `${URLProvider.getSiteOrigin()}/join/${result.splitId}`;
-                console.log(`Generated join link : ${joinLink}`);
-                await navigator.clipboard.writeText(joinLink); // doesn't work in HTTP 
+                await navigator.clipboard.writeText(joinLink);
                 setShareStatus('copied');
-
-                // Reset status after 3 seconds
-                setTimeout(() => setShareStatus('idle'), 3000);
+                setTimeout(() => setShareStatus('idle'), STATUS_RESET_DELAY_MS);
             } else {
                 throw new Error(result.message || 'Failed to generate session ID');
             }
-        } catch (err) {
-            console.error('Error sharing bill:', err);
+        } catch {
             setShareStatus('error');
-            setTimeout(() => setShareStatus('idle'), 3000);
+            setTimeout(() => setShareStatus('idle'), STATUS_RESET_DELAY_MS);
         }
     };
 
-    const handleCloseBill = () => {
-        setShowConfirmModal(true);
-    };
-
-    const confirmClose = () => {
+    const handleConfirmClose = () => {
         if (socketContext) {
             socketContext.publishAction({
                 actionType: ActionType.BYE_BYE,
-                itemId: 0 // dummy itemId for session closing
+                itemId: 0,
             });
         }
-        setShowConfirmModal(false);
-    };
-
-    const cancelClose = () => {
-        setShowConfirmModal(false);
     };
 
     return (
         <div className="right-controls">
-            <button
+            <Button
                 className={`control-btn share-btn ${shareStatus}`}
                 onClick={handleShareBill}
                 disabled={shareStatus === 'copying'}
+                variant="outline"
             >
-                {shareStatus === 'idle' && 'Share Bill'}
-                {shareStatus === 'copying' && 'Generating...'}
-                {shareStatus === 'copied' && 'Link Copied!'}
-                {shareStatus === 'error' && 'Retry Share'}
-            </button>
-            <button className="control-btn close-btn" onClick={handleCloseBill}>
-                Close Bill
-            </button>
+                {SHARE_LABEL[shareStatus]}
+            </Button>
 
-            {showConfirmModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h3>Close Bill</h3>
-                        <p>Are you sure you want to close this bill session? All data will be deleted.</p>
-                        <div className="modal-actions">
-                            <button className="modal-btn cancel-btn" onClick={cancelClose}>
-                                Cancel
-                            </button>
-                            <button className="modal-btn confirm-btn" onClick={confirmClose}>
-                                Confirm
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button className="control-btn close-btn" variant="outline">
+                        Close Bill
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Close Bill</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to close this bill session? All data will be deleted.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmClose}>Confirm</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

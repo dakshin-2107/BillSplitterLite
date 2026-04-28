@@ -1,31 +1,29 @@
-import React, { useState } from 'react';
-import './PeoplePanel.css';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import './PeoplePanel.css';
 
 interface PeoplePanelProps {
     people: string[];
     setPeople: (people: string[]) => void;
 }
 
-const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
-
+const PeoplePanel = ({ people, setPeople }: PeoplePanelProps) => {
     const [name, setName] = useState('');
     const [error, setError] = useState<string | null>(null);
 
-    const validateName = (name: string) => {
-        const trimmedName = name.trim();
-        if (trimmedName === "") return false;
+    const validateName = (value: string) => {
+        const trimmed = value.trim();
+        if (trimmed === '') return false;
 
-        // Check uniqueness (case-insensitive)
-        if (people.some(p => p.toLowerCase() === trimmedName.toLowerCase())) {
+        if (people.some(p => p.toLowerCase() === trimmed.toLowerCase())) {
             setError('Name already added');
             return false;
         }
 
         setError(null);
         return true;
-    }
+    };
 
     const handleAdd = () => {
         if (validateName(name)) {
@@ -34,10 +32,8 @@ const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
         }
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleAdd();
-        }
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') handleAdd();
     };
 
     const handleRemove = (index: number) => {
@@ -57,11 +53,11 @@ const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
                         setName(e.target.value);
                         if (error) setError(null);
                     }}
-                    onKeyDown={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                 />
                 <Button onClick={handleAdd}>Add</Button>
             </div>
-            {error && <p style={{ color: '#ff4444', fontSize: '0.8rem', marginTop: '-1rem', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p className="people-panel__error">{error}</p>}
 
             <div className="people-list-container">
                 {people.length > 0 ? (
@@ -79,11 +75,11 @@ const PeoplePanel: React.FC<PeoplePanelProps> = ({ people, setPeople }) => {
                         </div>
                     ))
                 ) : (
-                    <p style={{ color: '#666', padding: '1rem', textAlign: 'center' }}>No people added yet...</p>
+                    <p className="people-panel__empty">No people added yet...</p>
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default PeoplePanel;

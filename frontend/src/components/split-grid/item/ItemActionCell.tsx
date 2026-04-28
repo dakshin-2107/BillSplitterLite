@@ -1,16 +1,15 @@
-import React from 'react';
-import type { Item } from '../../../common/interfaces';
-import './ItemActionCell.css';
 import { useContext } from 'react';
 import { SocketContextProvider } from '../action-manager/SocketContext';
+import type { Item } from '../../../common/interfaces';
 import { ActionType } from '../../../common/interfaces';
+import './ItemActionCell.css';
 
 interface ItemActionCellProps {
     item: Item;
     billId: number;
 }
 
-const ItemActionCell: React.FC<ItemActionCellProps> = ({ item, billId }) => {
+const ItemActionCell = ({ item, billId }: ItemActionCellProps) => {
     const socketContext = useContext(SocketContextProvider);
 
     const handleDelete = () => {
@@ -18,7 +17,7 @@ const ItemActionCell: React.FC<ItemActionCellProps> = ({ item, billId }) => {
             socketContext.publishAction({
                 actionType: ActionType.DELETE_ITEM,
                 billId: billId,
-                itemId: item.id
+                itemId: item.id,
             });
         }
     };

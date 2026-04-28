@@ -1,16 +1,16 @@
 import { useState, useRef, type ChangeEvent } from 'react';
-import './BillForm.css';
 import { FieldLabel, FieldLegend, FieldSet, Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datepicker';
 import type { BillFormData } from '../../../common/interfaces';
+import './BillForm.css';
 
 interface BillFormProps {
-    setNewBill: (bill: BillFormData | null) => void;
+    onBillAdded: (bill: BillFormData) => void;
 }
 
-const BillForm = ({ setNewBill }: BillFormProps) => {
+const BillForm = ({ onBillAdded }: BillFormProps) => {
     const [location, setLocation] = useState('');
     const [date, setDate] = useState('');
     const [image, setImage] = useState<File | null>(null);
@@ -36,7 +36,7 @@ const BillForm = ({ setNewBill }: BillFormProps) => {
 
     const handleSubmit = () => {
         if (location && date && image) {
-            setNewBill({ location, date, image });
+            onBillAdded({ location, date, image });
             reset();
         }
     };

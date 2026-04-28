@@ -54,7 +54,7 @@
     padding: 0.8rem 1rem;
     color: white;
     font-size: 1rem;
-    transition: all 0.2s ease;
+    transition: border-color var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
 }
 
 .input-group input:focus {
@@ -76,7 +76,7 @@
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
     border: 1px solid transparent;
 }
 

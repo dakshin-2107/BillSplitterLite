@@ -1,31 +1,26 @@
-import './components.css';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import SplitForm from '@split-form/SplitForm';
 import SplitGrid from './split-grid/SplitGrid';
 import { type SplitData, type ApiResponse } from '@utils/interfaces';
 import { URLProvider } from '@utils/urlProvider';
-import { toast } from 'sonner';
 import { Toaster } from '@ui/sonner';
+import './components.css';
 
-const Home: React.FC = () => {
+const Home = () => {
     const [splitData, setSplitData] = useState<SplitData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // checks for existing session
     useEffect(() => {
         const checkExistingSession = async () => {
-
             setIsLoading(true);
             try {
                 const apiUrl = URLProvider.getHomeUrl();
-                if (!apiUrl) {
-                    console.error("Backend URL not found");
-                    return;
-                }
+                if (!apiUrl) return;
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    credentials: 'include', // FYI: this is required for cookies to be sent
+                    credentials: 'include',
                 });
 
                 if (!response.ok) {
@@ -33,14 +28,11 @@ const Home: React.FC = () => {
                 }
 
                 const result: ApiResponse = await response.json();
-
                 if (result.success && result.split) {
                     setSplitData(result.split);
-                } else {
-                    console.error("Failed to restore session:", result.message);
                 }
-            } catch (err) {
-                console.error("Error restoring session:", err);
+            } catch {
+                // session restore failure is silent — user starts fresh
             } finally {
                 setIsLoading(false);
             }
@@ -58,7 +50,6 @@ const Home: React.FC = () => {
         toast.error(errorMessage);
     };
 
-    // If we have split data, show the SplitGrid
     if (splitData) {
         return (
             <div className="home-container">
@@ -67,7 +58,6 @@ const Home: React.FC = () => {
         );
     }
 
-    // Show the form by default
     return (
         <div className="home-container">
             <Toaster />
@@ -76,7 +66,6 @@ const Home: React.FC = () => {
                     <div className="loading-spinner">Restoring session...</div>
                 </div>
             )}
-
             <SplitForm
                 onSubmitSuccess={handleFormSuccess}
                 onSubmitError={handleFormError}
@@ -86,4 +75,3 @@ const Home: React.FC = () => {
 };
 
 export default Home;
-

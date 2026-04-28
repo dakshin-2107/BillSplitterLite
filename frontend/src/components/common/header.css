@@ -33,7 +33,7 @@
     cursor: pointer;
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: background var(--transition-base), color var(--transition-base), transform var(--transition-base);
     display: flex;
     align-items: center;
     justify-content: center;

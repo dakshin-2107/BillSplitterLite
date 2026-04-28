@@ -1,5 +1,4 @@
-import './SplitForm.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { BillFormData, ApiResponse, SplitData } from '@utils/interfaces';
 import BillCarousel from '@split-form/bill-carousel/BillCarousel';
 import BillForm from '@split-form/bill-form/BillForm';
@@ -7,6 +6,7 @@ import PeoplePanel from '@split-form/people-panel/PeoplePanel';
 import { Button } from '@ui/button';
 import { Spinner } from '@ui/spinner';
 import { URLProvider } from '@utils/urlProvider';
+import './SplitForm.css';
 
 interface SplitFormProps {
     onSubmitSuccess: (data: SplitData) => void;
@@ -14,17 +14,13 @@ interface SplitFormProps {
 }
 
 const SplitForm = ({ onSubmitSuccess, onSubmitError }: SplitFormProps) => {
-    const [newBill, setNewBill] = useState<BillFormData | null>(null);
-    const [editBill, setEditBill] = useState<BillFormData | null>(null);
     const [bills, setBills] = useState<BillFormData[]>([]);
     const [people, setPeople] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (!newBill) return;
-        setBills(prev => [...prev, newBill]);
-        setNewBill(null);
-    }, [newBill]);
+    const handleBillAdded = (bill: BillFormData) => {
+        setBills(prev => [...prev, bill]);
+    };
 
     const handleStartSession = async () => {
         setIsSubmitting(true);
@@ -61,20 +57,17 @@ const SplitForm = ({ onSubmitSuccess, onSubmitError }: SplitFormProps) => {
     const handleResetAll = () => {
         setBills([]);
         setPeople([]);
-        setNewBill(null);
     };
 
     return (
         <div className="split-form-container">
-            <BillCarousel bills={bills} setBills={setBills} setEditBill={setEditBill} />
+            <BillCarousel bills={bills} setBills={setBills} />
             <div className="main-content-grid">
-                <BillForm setNewBill={setNewBill} />
+                <BillForm onBillAdded={handleBillAdded} />
                 <div className="people-panel-column">
                     <div className="people-panel-actions">
                         {isSubmitting
-                            ? <>
-                                <Spinner className="size-10 m-auto mb-5 mt-5" />
-                            </>
+                            ? <Spinner className="size-10 m-auto mb-5 mt-5" />
                             : <>
                                 <Button type="button" variant="destructive" onClick={handleResetAll} disabled={isSubmitting}>
                                     Reset all
