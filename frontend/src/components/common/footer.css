@@ -1,20 +1,22 @@
 .app-footer {
     width: 100%;
     padding: 1rem;
-    background: #1a1a1a;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--ds-surface);
+    border-top: 1px solid var(--ds-outline);
     box-sizing: border-box;
     text-align: center;
     flex-shrink: 0;
+    font-family: 'Manrope', sans-serif;
 }
 
 .footer-link {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1rem;
+    color: var(--ds-on-variant);
+    font-size: 0.875rem;
+    font-weight: 500;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color var(--transition-base);
 }
 
 .footer-link:hover {
-    color: #667eea;
+    color: var(--ds-primary);
 }

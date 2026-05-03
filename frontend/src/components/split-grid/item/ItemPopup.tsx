@@ -1,9 +1,9 @@
 import { useState, useContext } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SocketContextProvider } from '../action-manager/SocketContext';
 import { ActionType } from '../../../common/interfaces';
+import useNotify from '../../../hooks/useNotify';
 import './ItemPopup.css';
 
 interface ItemPopupProps {
@@ -12,19 +12,20 @@ interface ItemPopupProps {
 }
 
 const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
+    const notify = useNotify();
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const socketContext = useContext(SocketContextProvider);
 
     const handleConfirm = () => {
         if (!name || !price) {
-            toast.error('Please enter both name and price');
+            notify.error('Please enter both name and price');
             return;
         }
 
         const numericPrice = parseFloat(price);
         if (isNaN(numericPrice)) {
-            toast.error('Please enter a valid price');
+            notify.error('Please enter a valid price');
             return;
         }
 

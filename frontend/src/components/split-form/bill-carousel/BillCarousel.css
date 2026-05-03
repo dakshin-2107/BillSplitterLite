@@ -7,8 +7,8 @@
 
 .bill-carousel-wrapper {
     padding: 1.5rem 3.5rem;
-    background: var(--carousel-background-color);
-    border: 1px solid var(--input-border-color);
+    background: var(--ds-surface-low);
+    border: 1px solid var(--ds-outline);
     border-radius: var(--radius-sm);
     height: 100%;
 }
@@ -19,7 +19,7 @@
     height: 100%;
     object-fit: contain;
     border-radius: var(--radius-sm);
-    background-color: var(--color-input-background);
+    background-color: var(--ds-surface);
 }
 
 .carousel-item {
@@ -28,12 +28,12 @@
     gap: 1.5rem;
     height: 100%;
     min-height: 220px;
-    border: 1px solid var(--input-border-color);
+    border: 1px solid var(--ds-outline);
     padding: 1rem;
     max-width: 350px;
     margin: 0 0 0 25px;
     border-radius: var(--radius-sm);
-    background-color: var(--input-background);
+    background-color: var(--ds-surface);
     box-sizing: border-box;
 }
 
@@ -41,6 +41,20 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    color: var(--ds-on-surface);
+}
+
+.bill-location {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ds-on-surface);
+    margin: 0;
+}
+
+.bill-date {
+    font-size: 0.8rem;
+    color: var(--ds-on-variant);
+    margin: 0.25rem 0 0;
 }
 
 .bill-item-actions {
@@ -53,11 +67,16 @@
 }
 
 .bill-item-placeholder {
-    font-size: 0.7rem;
-    color: #666;
+    font-size: 0.75rem;
+    color: var(--ds-on-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
 .bill-carousel__empty {
-    color: #666;
+    color: var(--ds-on-variant);
+    font-size: 0.875rem;
     padding: 1rem;
 }

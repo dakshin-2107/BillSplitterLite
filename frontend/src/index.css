@@ -4,67 +4,86 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* ── Ledger Clear design tokens ── */
+  --ds-bg:           #f5f6f7;
+  --ds-surface:      #ffffff;
+  --ds-surface-low:  #eff1f2;
+  --ds-surface-mid:  #e6e8ea;
+  --ds-surface-high: #e0e3e4;
+  --ds-primary:      #0846ed;
+  --ds-primary-dim:  #003cd3;
+  --ds-primary-cnt:  #859aff;
+  --ds-secondary:    #514eb6;
+  --ds-tertiary:     #913983;
+  --ds-on-surface:   #2c2f30;
+  --ds-on-variant:   #595c5d;
+  --ds-outline:      rgba(171, 173, 174, 0.2);
+  --ds-error:        #b41340;
+  --ds-success:      #16a34a;
+  --ds-gradient:     linear-gradient(135deg, #0846ed 0%, #859aff 100%);
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* ── Shadcn / Tailwind theme tokens ── */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.97 0 0);
+  --foreground: oklch(0.22 0 0);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.22 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.22 0 0);
+  --primary: oklch(0.4 0.18 255);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary-foreground: oklch(0.22 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent-foreground: oklch(0.22 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.4 0.18 255);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.22 0 0);
+  --sidebar-primary: oklch(0.4 0.18 255);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent-foreground: oklch(0.22 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.4 0.18 255);
 
-  --input-background: #121212;
-  --form-group-background: #1f1f1f;
-  --input-border-color: #333333;
-  --carousel-background-color: #1f1f1f;
-  --button-primary-color: #8569e0;
-  --button-hover-color: #6e47ee;
-  --button-destructive-color: #c31921;
-  --button-destructive-color-hover: #ff000d;
-  --color-focus-ring: #BB86FC;
-  --transition-base: 0.2s ease;
-  --transition-fast: 0.15s ease;
+  /* ── Component tokens (mapped to Ledger Clear) ── */
+  --input-background:         var(--ds-surface);
+  --form-group-background:    var(--ds-surface-low);
+  --input-border-color:       var(--ds-outline);
+  --carousel-background-color: var(--ds-surface-low);
+  --button-primary-color:     var(--ds-primary);
+  --button-hover-color:       var(--ds-primary-dim);
+  --button-destructive-color: var(--ds-error);
+  --button-destructive-color-hover: #8b0000;
+  --color-focus-ring:         var(--ds-primary);
+  --transition-base:          0.2s ease;
+  --transition-fast:          0.15s ease;
 
-  --input-height: 52px;
-  --input-button: 50px;
-  --form-group-radius: calc(var(--radius) - 4px);
+  /* ── Layout ── */
+  --input-height:        52px;
+  --input-button:        50px;
+  --form-group-radius:   calc(var(--radius) - 4px);
   --font-size-input-label: 10px;
+
+  font-family: 'Manrope', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ds-on-surface);
+  background-color: var(--ds-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @theme inline {
@@ -106,31 +125,27 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-
   --color-input-background: var(--input-background);
   --color-input-border-color: var(--input-border-color);
-  --color-form-background-color: var(--form-background-color);
   --color-regular-button: var(--button-primary-color);
   --color-hover-button: var(--button-hover-color);
   --color-dest-button: var(--button-destructive-color);
   --color-dest-button-hover: var(--button-destructive-color-hover);
-
   --spacing-input-button: var(--input-button);
   --spacing-input: var(--input-height);
   --radius-input: var(--radius-sm);
   --radius-form: var(--radius-sm);
-
   --font-size-input-label: var(--font-size-input-label);
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--ds-primary);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: var(--ds-primary-dim);
 }
 
 body {
@@ -145,22 +160,6 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.5;
-}
-
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
 }
 
 .dark {
@@ -187,14 +186,6 @@ h1 {
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {

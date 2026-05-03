@@ -14,6 +14,7 @@ import {
 import { SocketContextProvider } from '../action-manager/SocketContext';
 import { ActionType } from '../../../common/interfaces';
 import { URLProvider } from '../../../common/urlProvider';
+import useNotify from '../../../hooks/useNotify';
 import './BillActions.css';
 
 interface ShareBillApiResponse {
@@ -32,6 +33,7 @@ const SHARE_LABEL: Record<string, string> = {
 };
 
 const BillActions = () => {
+    const notify = useNotify();
     const socketContext = useContext(SocketContextProvider);
     const [shareStatus, setShareStatus] = useState<'idle' | 'copying' | 'copied' | 'error'>('idle');
 
@@ -59,6 +61,7 @@ const BillActions = () => {
             }
         } catch {
             setShareStatus('error');
+            notify.error('Failed to copy link');
             setTimeout(() => setShareStatus('idle'), STATUS_RESET_DELAY_MS);
         }
     };

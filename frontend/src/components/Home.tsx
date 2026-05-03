@@ -1,19 +1,26 @@
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useLocation } from 'react-router-dom';
 import SplitForm from '@split-form/SplitForm';
 import SplitGrid from './split-grid/SplitGrid';
+import Dashboard from './dashboard/Dashboard';
 import { type SplitData, type ApiResponse } from '@utils/interfaces';
 import { URLProvider } from '@utils/urlProvider';
-import { Toaster } from '@ui/sonner';
+import useNotify from '../hooks/useNotify';
 import './components.css';
 
+type View = 'dashboard' | 'form' | 'grid';
+
 const Home = () => {
+    const notify = useNotify();
+    const location = useLocation();
+    const initialView: View = (location.state as { view?: View } | null)?.view ?? 'dashboard';
+    const [view, setView] = useState<View>(initialView);
     const [splitData, setSplitData] = useState<SplitData | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingSession, setIsLoadingSession] = useState(false);
 
     useEffect(() => {
         const checkExistingSession = async () => {
-            setIsLoading(true);
+            setIsLoadingSession(true);
             try {
                 const apiUrl = URLProvider.getHomeUrl();
                 if (!apiUrl) return;
@@ -34,7 +41,7 @@ const Home = () => {
             } catch {
                 // session restore failure is silent — user starts fresh
             } finally {
-                setIsLoading(false);
+                setIsLoadingSession(false);
             }
         };
 
@@ -43,14 +50,15 @@ const Home = () => {
 
     const handleFormSuccess = (data: SplitData) => {
         setSplitData(data);
-        toast.success('Session started successfully');
+        setView('grid');
+        notify.success('Session started successfully');
     };
 
     const handleFormError = (errorMessage: string) => {
-        toast.error(errorMessage);
+        notify.error(errorMessage);
     };
 
-    if (splitData) {
+    if (view === 'grid' && splitData) {
         return (
             <div className="home-container">
                 <SplitGrid splitData={splitData} setSplitData={setSplitData} />
@@ -58,17 +66,27 @@ const Home = () => {
         );
     }
 
+    if (view === 'form') {
+        return (
+            <div className="home-container">
+                <SplitForm
+                    onSubmitSuccess={handleFormSuccess}
+                    onSubmitError={handleFormError}
+                />
+            </div>
+        );
+    }
+
     return (
         <div className="home-container">
-            <Toaster />
-            {isLoading && (
-                <div className="loading-overlay">
-                    <div className="loading-spinner">Restoring session...</div>
-                </div>
-            )}
-            <SplitForm
-                onSubmitSuccess={handleFormSuccess}
-                onSubmitError={handleFormError}
+            <Dashboard
+                onStartNewBill={() => setView('form')}
+                activeSession={splitData}
+                onResumeSession={(data) => {
+                    setSplitData(data);
+                    setView('grid');
+                }}
+                isLoadingSession={isLoadingSession}
             />
         </div>
     );

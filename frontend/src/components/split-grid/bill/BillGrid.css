@@ -2,27 +2,24 @@
     max-height: 600px;
     overflow-y: auto;
     padding-right: 8px;
-    /* For scrollbar space */
 }
 
-/* Custom scrollbar for premium look */
 .scrollable-grid::-webkit-scrollbar {
-    width: 10px;
-    margin-left: 0.5rem;
+    width: 8px;
 }
 
 .scrollable-grid::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+    background: var(--ds-surface-low);
+    border-radius: 8px;
 }
 
 .scrollable-grid::-webkit-scrollbar-thumb {
-    background: rgba(100, 181, 246, 0.3);
-    border-radius: 10px;
+    background: rgba(8, 70, 237, 0.2);
+    border-radius: 8px;
 }
 
 .scrollable-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 181, 246, 0.5);
+    background: rgba(8, 70, 237, 0.35);
 }
 
 .table-section {
@@ -30,5 +27,4 @@
     overflow-y: scroll;
     flex: 1;
     min-width: 0;
-    /* Prevent overflow issues in flexbox */
 }
