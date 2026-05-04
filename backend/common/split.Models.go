@@ -47,6 +47,7 @@ type ISplitModifier interface {
 	GetNewItemId(splitId string, billId int) int
 	AddItemToBill(splitId string, billId int, item Item) error
 	DeleteItemFromBill(splitId string, billId int, itemId int) error
+	EditItemInBill(splitId string, billId int, itemId int, name string, price float32) error
 
 	AddNewTakerForItem(splitId string, billId int, itemId int, takerId string) error
 	DeleteTakerForItem(splitId string, billId int, itemId int, takerId string) error

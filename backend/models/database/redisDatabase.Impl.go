@@ -172,18 +172,14 @@ func (r *RedisDatabaseConnection) DeleteTakerFromSplit(splitId string, takerId s
 
 func (r *RedisDatabaseConnection) GetNewItemId(splitId string, billId int) int {
 	path := fmt.Sprintf("$.bills.%d.itemIdCounter", billId)
-	data, err := r.redisClient.Do(r.ctx, "JSON.GET", splitId, path).Result()
-	if err != nil {
-		r.logger.InfoLog(fmt.Sprintf("Error getting itemIdCounter: %v", err))
-		return 0
+	result, err := r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, path, 1).Result()
+	if err == nil {
+		if val, ok := r.CheckResult(result); ok {
+			return val
+		}
 	}
-
-	var counter []int
-	err = json.Unmarshal([]byte(data.(string)), &counter)
-	if err != nil || len(counter) == 0 {
-		return 0
-	}
-	return counter[0]
+	r.logger.InfoLog(fmt.Sprintf("Error getting new item ID: %v", err))
+	return 0
 }
 
 func (r *RedisDatabaseConnection) AddItemToBill(splitId string, billId int, item common.Item) error {
@@ -192,12 +188,7 @@ func (r *RedisDatabaseConnection) AddItemToBill(splitId string, billId int, item
 		return err
 	}
 	path := fmt.Sprintf("$.bills.%d.items.%d", billId, item.Id)
-	err = r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, data).Err()
-	if err != nil {
-		return err
-	}
-	// Increment itemIdCounter in the bill
-	return r.redisClient.Do(r.ctx, "JSON.NUMINCRBY", splitId, fmt.Sprintf("$.bills.%d.itemIdCounter", billId), 1).Err()
+	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, path, data).Err()
 }
 
 func (r *RedisDatabaseConnection) DeleteItemFromBill(splitId string, billId int, itemId int) error {
@@ -210,6 +201,21 @@ func (r *RedisDatabaseConnection) DeleteItemFromBill(splitId string, billId int,
 		return nil
 	}
 	return fmt.Errorf("item not found")
+}
+
+func (r *RedisDatabaseConnection) EditItemInBill(splitId string, billId int, itemId int, name string, price float32) error {
+	basePath := fmt.Sprintf("$.bills.%d.items.%d", billId, itemId)
+
+	nameJSON, err := json.Marshal(name)
+	if err != nil {
+		return err
+	}
+	if err := r.redisClient.Do(r.ctx, "JSON.SET", splitId, basePath+".name", string(nameJSON)).Err(); err != nil {
+		return err
+	}
+
+	rounded := fmt.Sprintf("%.2f", price)
+	return r.redisClient.Do(r.ctx, "JSON.SET", splitId, basePath+".price", rounded).Err()
 }
 
 func (r *RedisDatabaseConnection) AddNewTakerForItem(splitId string, billId int, itemId int, takerId string) error {

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import './TallyPanel.css';
 import type { Tally, SplitData } from '@utils/interfaces';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { formatDate } from '@utils/dateUtils';
 
 interface TallyPanelProps {
@@ -17,31 +17,12 @@ const TallyPanel: React.FC<TallyPanelProps> = ({ tally, participants, splitData,
 
     const handleCopyImage = async () => {
         if (!panelRef.current) return;
-
         try {
-            const canvas = await html2canvas(panelRef.current, {
-                backgroundColor: '#1E1E1E', // Match container background
-                scale: 2, // Higher quality
-                logging: false,
-                useCORS: true
-            });
-
-            canvas.toBlob(async (blob) => {
-                if (blob) {
-                    try {
-                        await navigator.clipboard.write([
-                            new ClipboardItem({
-                                'image/png': blob
-                            })
-                        ]);
-                        console.log("Image copied to clipboard");
-                    } catch (err) {
-                        console.error("Failed to copy image to clipboard:", err);
-                    }
-                }
-            }, 'image/png');
+            const dataUrl = await toPng(panelRef.current, { pixelRatio: 2 });
+            const blob = await (await fetch(dataUrl)).blob();
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         } catch (err) {
-            console.error("Error generating tally image:", err);
+            console.error('Failed to copy tally image:', err);
         }
     };
 

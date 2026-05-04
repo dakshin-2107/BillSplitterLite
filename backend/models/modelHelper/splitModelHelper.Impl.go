@@ -73,6 +73,10 @@ func (sp *SplitModelHelper) DeleteItemFromBill(splitId string, billId int, itemI
 	return sp.db.DeleteItemFromBill(splitId, billId, itemId)
 }
 
+func (sp *SplitModelHelper) EditItemInBill(splitId string, billId int, itemId int, name string, price float32) error {
+	return sp.db.EditItemInBill(splitId, billId, itemId, name, price)
+}
+
 func (sp *SplitModelHelper) AddNewTakerForItem(splitId string, billId int, itemId int, takerId string) error {
 	return sp.db.AddNewTakerForItem(splitId, billId, itemId, takerId)
 }

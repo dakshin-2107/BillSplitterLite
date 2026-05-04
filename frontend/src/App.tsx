@@ -9,12 +9,14 @@ import Example from './components/Example'
 import Header from './components/common/header'
 import Footer from './components/common/footer'
 import ErrorPage from './components/common/ErrorPage'
+import MobileBlock from './components/common/MobileBlock'
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from '@ui/sonner'
 
 function App() {
   return (
     <div className="app-layout">
+      <MobileBlock />
       <Header />
       <Toaster />
       <TooltipProvider>

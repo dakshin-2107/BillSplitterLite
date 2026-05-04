@@ -58,6 +58,7 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 				Price:  action.Price,
 				Takers: make(map[string]int),
 			}
+			action.ItemId = newItem.Id
 
 			s.logger.DebugLog(fmt.Sprintf("adding item(itemID: %v) to bill(billID: %v) in split(splitID: %v)", newItem.Id, action.BillId, splitID))
 			err = s.ModelHelper.AddItemToBill(splitID, action.BillId, newItem)
@@ -69,9 +70,9 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 			dirtyBillId = action.BillId
 
 		case common.EDIT_ITEM:
-			s.logger.DebugLog(fmt.Sprintf("editing item(itemID: %v)", action.ItemId))
-			// TODO: Implement EditItem in ModelHelper if needed
-			// dirtyBillId = action.BillId only if price changes
+			s.logger.DebugLog(fmt.Sprintf("editing item(itemID: %v) in bill(billID: %v)", action.ItemId, action.BillId))
+			err = s.ModelHelper.EditItemInBill(splitID, action.BillId, action.ItemId, action.ItemName, action.Price)
+			dirtyBillId = action.BillId
 
 		// item's taker cases — only the affected bill needs recompute
 		case common.ADD_TAKER_FOR_ITEM:
@@ -111,7 +112,6 @@ func (s *SessionManager) ExecuteAction(splitID string, userID string, actionData
 		case common.EDIT_TAKER:
 			s.logger.DebugLog(fmt.Sprintf("editing taker(takerID: %v)", action.TakerId))
 			requiresFullTally = true
-
 		}
 	}
 

@@ -24,10 +24,18 @@
     transform: translateY(-1px);
 }
 
+.edit-btn {
+    color: rgba(81, 78, 182, 0.6);
+}
+
 .edit-btn:hover {
     color: var(--ds-secondary);
     background: rgba(81, 78, 182, 0.08);
     border-color: rgba(81, 78, 182, 0.2);
+}
+
+.delete-btn {
+    color: rgba(180, 19, 64, 0.6);
 }
 
 .delete-btn:hover {

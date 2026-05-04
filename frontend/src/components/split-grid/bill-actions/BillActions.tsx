@@ -1,4 +1,5 @@
 import { useContext, useState } from 'react';
+import { Share2, Loader2, Check, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     AlertDialog,
@@ -25,11 +26,18 @@ interface ShareBillApiResponse {
 
 const STATUS_RESET_DELAY_MS = 3000;
 
-const SHARE_LABEL: Record<string, string> = {
-    idle: 'Share Bill',
-    copying: 'Generating...',
-    copied: 'Link Copied!',
-    error: 'Retry Share',
+const SHARE_ICON: Record<string, React.ReactNode> = {
+    idle:    <Share2 size={16} />,
+    copying: <Loader2 size={16} className="spin" />,
+    copied:  <Check size={16} />,
+    error:   <AlertCircle size={16} />,
+};
+
+const SHARE_TITLE: Record<string, string> = {
+    idle:    'Share Bill',
+    copying: 'Generating link...',
+    copied:  'Link copied!',
+    error:   'Retry share',
 };
 
 const BillActions = () => {
@@ -66,6 +74,15 @@ const BillActions = () => {
         }
     };
 
+    const handleRefresh = () => {
+        if (socketContext) {
+            socketContext.publishAction({
+                actionType: ActionType.SYNC_BILL_STATE,
+                itemId: 0,
+            });
+        }
+    };
+
     const handleConfirmClose = () => {
         if (socketContext) {
             socketContext.publishAction({
@@ -77,13 +94,24 @@ const BillActions = () => {
 
     return (
         <div className="right-controls">
+
+            <Button
+                className="control-btn refresh-btn"
+                onClick={handleRefresh}
+                variant="outline"
+                title="Sync with server"
+            >
+                <RefreshCw size={16} />
+            </Button>
+
             <Button
                 className={`control-btn share-btn ${shareStatus}`}
                 onClick={handleShareBill}
                 disabled={shareStatus === 'copying'}
                 variant="outline"
+                title={SHARE_TITLE[shareStatus]}
             >
-                {SHARE_LABEL[shareStatus]}
+                {SHARE_ICON[shareStatus]}
             </Button>
 
             <AlertDialog>

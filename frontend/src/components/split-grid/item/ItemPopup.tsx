@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SocketContextProvider } from '../action-manager/SocketContext';
+import type { Item } from '../../../common/interfaces';
 import { ActionType } from '../../../common/interfaces';
 import useNotify from '../../../hooks/useNotify';
 import './ItemPopup.css';
@@ -9,13 +10,16 @@ import './ItemPopup.css';
 interface ItemPopupProps {
     onClose: () => void;
     billId: number;
+    item?: Item;
 }
 
-const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
+const ItemPopup = ({ onClose, billId, item }: ItemPopupProps) => {
     const notify = useNotify();
-    const [name, setName] = useState('');
-    const [price, setPrice] = useState('');
+    const [name, setName] = useState(item?.name ?? '');
+    const [price, setPrice] = useState(item ? String(item.price) : '');
     const socketContext = useContext(SocketContextProvider);
+
+    const isEdit = item !== undefined;
 
     const handleConfirm = () => {
         if (!name || !price) {
@@ -30,13 +34,23 @@ const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
         }
 
         if (socketContext) {
-            socketContext.publishAction({
-                actionType: ActionType.ADD_NEW_ITEM,
-                billId: billId,
-                itemId: -1,
-                itemName: name,
-                price: numericPrice,
-            });
+            socketContext.publishAction(
+                isEdit
+                    ? {
+                          actionType: ActionType.EDIT_ITEM,
+                          billId: billId,
+                          itemId: item.id,
+                          itemName: name.trim(),
+                          price: numericPrice,
+                      }
+                    : {
+                          actionType: ActionType.ADD_NEW_ITEM,
+                          billId: billId,
+                          itemId: -1,
+                          itemName: name,
+                          price: numericPrice,
+                      }
+            );
         }
 
         onClose();
@@ -45,7 +59,7 @@ const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
     return (
         <div className="popup-overlay">
             <div className="popup-content">
-                <h2>Add New Item</h2>
+                <h2>{isEdit ? 'Edit Item' : 'Add New Item'}</h2>
                 <div className="input-group">
                     <label>Item Name</label>
                     <Input
@@ -54,6 +68,7 @@ const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Pizza"
                         autoFocus
+                        onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
                     />
                 </div>
                 <div className="input-group">
@@ -64,11 +79,12 @@ const ItemPopup = ({ onClose, billId }: ItemPopupProps) => {
                         onChange={(e) => setPrice(e.target.value)}
                         placeholder="0.00"
                         step="0.01"
+                        onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
                     />
                 </div>
                 <div className="popup-actions">
                     <Button variant="outline" onClick={onClose}>Cancel</Button>
-                    <Button onClick={handleConfirm}>Confirm</Button>
+                    <Button onClick={handleConfirm}>{isEdit ? 'Save' : 'Confirm'}</Button>
                 </div>
             </div>
         </div>
