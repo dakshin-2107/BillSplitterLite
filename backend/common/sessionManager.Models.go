@@ -47,11 +47,11 @@ const (
 
 type ISessionManager interface {
 	Init(logger logger.ILogger, connUpgrader *websocket.Upgrader, modelHelper ISplitModelHelper)
-	GetNewUserSessionId(sessionId string) (string, error)
-	GetUserSessionConnection(sessionId string, userid string, ctx *gin.Context) (*websocket.Conn, error)
-	AddConnection(sessionId string, newConnection *websocket.Conn) error
+	GetNewUserSessionId(splitID string) (string, error)
+	GetUserSessionConnection(splitID string, userid string, ctx *gin.Context) (*websocket.Conn, error)
+	AddConnection(splitID string, newConnection *websocket.Conn) error
 	CleanSessions() error
-	DeleteSession(sessionId string) error
+	DeleteSession(splitID string) error
 	IActionService
 }
 
@@ -71,52 +71,47 @@ type IPublisher interface {
 /*
 Example tally JSON
 {
-	userShares: {
-		Kevin : {
-			billShares : {
-				"1" : {
-					itemShares : {
-						"1" : 100.00,
-						"2" : 200.00
-					},
-					billShareTotal : 300.00
+	billShares: {
+		"1": {
+			billName: "Poor Richards - 1st Jan, 2025",
+			userShares: {
+				"KEVIN": {
+					itemShares: { "Chicken": 100.00, "Beer": 200.00 },
+					userShareTotal: 300.00
 				},
-				"2" : {
-					itemShares : {
-						"1" : 150.00,
-						"2" : 200.00
-					},
-					billShareTotal : 350.00
+				"JOHN": {
+					itemShares: { "Salad": 150.00 },
+					userShareTotal: 150.00
 				}
 			},
-			userShareTotal : 650.00
+			billTotal: 450.00
+		},
+		"2": {
+			billName: "Pizza by Alfredo's - 25th Dec, 2025",
+			userShares: { ... },
+			billTotal: 550.00
 		}
-	},
-	billNameMap: {
-		"1" : "Poor richards - 1st Jan, 2025",
-		"2" : "Pizza by alfredo's - 25th Dec, 2025"
 	},
 	actualTotal: 1000.00,
 	calculatedTotal: 1000.00,
 	totalDifference: 0.00
 }
-
 */
 
 type Tally struct {
-	UserShares      map[string]UserShare `json:"userShares"`
-	BillNameMap     map[int]string       `json:"billNameMap"`
-	ActualTotal     float32              `json:"actualTotal"`
-	CalculatedTotal float32              `json:"calculatedTotal"`
-	TotalDifference float32              `json:"totalDifference"`
-}
-
-type UserShare struct {
-	BillShares     map[int]BillShare `json:"billShares"`
-	UserShareTotal float32           `json:"userShareTotal"`
+	BillShares      map[int]BillShare `json:"billShares"`
+	ActualTotal     float32           `json:"actualTotal"`
+	CalculatedTotal float32           `json:"calculatedTotal"`
+	TotalDifference float32           `json:"totalDifference"`
 }
 
 type BillShare struct {
+	BillName   string               `json:"billName"`
+	UserShares map[string]UserShare `json:"userShares"`
+	BillTotal  float32              `json:"billTotal"`
+}
+
+type UserShare struct {
 	ItemShares     map[string]float32 `json:"itemShares"`
-	BillShareTotal float32            `json:"billShareTotal"`
+	UserShareTotal float32            `json:"userShareTotal"`
 }

@@ -6,3 +6,11 @@
 backend/.env
 .vscode/launch.json
 design
+.claude
+
+.DS_store
+
+*/.claude
+CLAUDE.md
+
+MY-README.md

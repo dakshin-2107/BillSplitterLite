@@ -73,6 +73,10 @@ func (sp *SplitModelHelper) DeleteItemFromBill(splitId string, billId int, itemI
 	return sp.db.DeleteItemFromBill(splitId, billId, itemId)
 }
 
+func (sp *SplitModelHelper) EditItemInBill(splitId string, billId int, itemId int, name string, price float32) error {
+	return sp.db.EditItemInBill(splitId, billId, itemId, name, price)
+}
+
 func (sp *SplitModelHelper) AddNewTakerForItem(splitId string, billId int, itemId int, takerId string) error {
 	return sp.db.AddNewTakerForItem(splitId, billId, itemId, takerId)
 }
@@ -85,8 +89,8 @@ func (sp *SplitModelHelper) AddAllTakersToItem(splitId string, billId int, itemI
 	return sp.db.AddAllTakersToItem(splitId, billId, itemId)
 }
 
-func (sp *SplitModelHelper) UpdateSplitTotal(splitId string, newTotal float32) error {
-	return sp.db.UpdateSplitTotal(splitId, newTotal)
+func (sp *SplitModelHelper) GetBill(splitId string, billId int) (*common.Bill, error) {
+	return sp.db.GetBill(splitId, billId)
 }
 
 // Creation helpers
@@ -94,7 +98,7 @@ func (sp *SplitModelHelper) CreateNewSplit() *common.Split {
 	return &common.Split{
 		SplitID:       "",
 		Bills:         make(map[int]common.Bill),
-		TotalAmount:   0.0,
+
 		Participants:  make(map[string]string),
 		BillIdCounter: 0,
 		CreatedAt:     time.Now(),

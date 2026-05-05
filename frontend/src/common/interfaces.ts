@@ -21,7 +21,6 @@ export interface SplitFormData {
 
 export interface SplitData {
     splitId: string;
-    totalAmount: number;
     bills: Record<string, BillData>;
     itemIdCounter: number;
     participants: Record<string, string>;
@@ -119,25 +118,31 @@ export interface SocketProvider {
 }
 
 export interface Tally {
-    userShares: Record<string, UserShare>;
-    billNameMap: Record<number, string>;
+    billShares: Record<number, BillShare>;
     actualTotal: number;
     calculatedTotal: number;
     totalDifference: number;
 }
 
-export interface UserShare {
-    billShares: Record<number, BillShare>;
-    userShareTotal: number;
+export interface BillShare {
+    billName: string;
+    userShares: Record<string, UserShare>;
+    billTotal: number;
 }
 
-export interface BillShare {
+export interface UserShare {
     itemShares: Record<string, number>;
-    billShareTotal: number;
+    userShareTotal: number;
 }
 
 export interface TallyResponse {
     success: boolean;
     message: string;
     tally: Tally;
+}
+
+export interface BillTallyResponse {
+    success: boolean;
+    message: string;
+    billShares: Record<number, BillShare>;
 }

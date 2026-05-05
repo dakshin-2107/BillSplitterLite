@@ -13,7 +13,7 @@ Purpose :
 type PingHandler struct{ common.RouteHandlerBase }
 
 func (p *PingHandler) Init() {
-	p.Pattern = `/ping`
+	p.Pattern = `/pingpong`
 	p.Method = "GET"
 	p.Group = ""
 	p.Handler = p.Handle
@@ -21,7 +21,7 @@ func (p *PingHandler) Init() {
 
 func (p *PingHandler) Handle(ctx *gin.Context) {
 	p.Logger.DebugLog("Server was just pinged")
-	ctx.JSON(200, "pong")
+	ctx.JSON(200, "dingdong")
 }
 
 func testPing() common.IRouteHandlerBase {

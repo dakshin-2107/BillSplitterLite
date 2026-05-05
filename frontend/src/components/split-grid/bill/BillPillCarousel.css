@@ -5,37 +5,34 @@
     margin-bottom: 1rem;
     padding: 0 10px;
     position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    border: 1px solid var(--ds-outline);
+    border-radius: 10px;
+    background: var(--ds-surface-low);
 }
 
 .bill-pills-wrapper {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 8px 4px;
+    padding: 10px 4px;
     flex: 1;
-}
-
-/* Hide scrollbar but keep functionality */
-.bill-pills-wrapper::-webkit-scrollbar {
-    display: none;
-}
-
-.bill-pills-wrapper {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
 
+.bill-pills-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
 .bill-pill {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 10px 20px;
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-outline);
+    border-radius: 10px;
+    padding: 10px 16px;
     min-width: 140px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -43,21 +40,20 @@
 }
 
 .bill-pill:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-2px);
-    border-color: rgba(100, 181, 246, 0.3);
+    border-color: rgba(8, 70, 237, 0.3);
+    transform: translateY(-1px);
 }
 
 .bill-pill.active {
-    background: rgba(100, 181, 246, 0.15);
-    border-color: #64b5f6;
-    box-shadow: 0 4px 15px rgba(100, 181, 246, 0.2);
+    background: rgba(8, 70, 237, 0.06);
+    border-color: var(--ds-primary);
+    box-shadow: 0 2px 12px rgba(8, 70, 237, 0.12);
 }
 
 .pill-location {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--ds-on-surface);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -66,30 +62,29 @@
 
 .pill-date {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--ds-on-variant);
     font-weight: 400;
 }
 
 .scroll-arrow {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    width: 32px;
-    height: 32px;
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-outline);
+    color: var(--ds-on-variant);
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: border-color var(--transition-base), color var(--transition-base);
     font-family: monospace;
     flex-shrink: 0;
 }
 
 .scroll-arrow:hover {
-    background: rgba(100, 181, 246, 0.2);
-    border-color: #64b5f6;
-    color: #64b5f6;
+    border-color: var(--ds-primary);
+    color: var(--ds-primary);
 }
 
 .scroll-arrow:active {

@@ -5,36 +5,41 @@
 }
 
 .action-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
+    background: var(--ds-surface-low);
+    border: 1px solid var(--ds-outline);
+    color: var(--ds-on-variant);
     border-radius: 8px;
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-    font-weight: 500;
+    padding: 0.4rem 0.875rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base), transform var(--transition-base);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .action-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.edit-btn {
+    color: rgba(81, 78, 182, 0.6);
 }
 
 .edit-btn:hover {
-    color: #a78bfa;
-    background: rgba(167, 139, 250, 0.1);
-    border-color: rgba(167, 139, 250, 0.3);
+    color: var(--ds-secondary);
+    background: rgba(81, 78, 182, 0.08);
+    border-color: rgba(81, 78, 182, 0.2);
+}
+
+.delete-btn {
+    color: rgba(180, 19, 64, 0.6);
 }
 
 .delete-btn:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--ds-error);
+    background: rgba(180, 19, 64, 0.08);
+    border-color: rgba(180, 19, 64, 0.2);
 }

@@ -1,6 +1,6 @@
 import './SplitGrid.css';
 import React from 'react';
-import type { SplitData, Tally } from '../../common/interfaces';
+import type { SplitData, Tally } from '@utils/interfaces';
 import TakersPanel from './people-panel/TakersPanel';
 import { SocketContextComponent } from './action-manager/SocketContext';
 import { StatusIndicator } from './connection-status/StatusIndicator';
@@ -97,6 +97,7 @@ const SplitGrid: React.FC<SplitGridProps> = ({ splitData, setSplitData }) => {
                                 tally={tally}
                                 participants={splitData.participants}
                                 splitData={splitData}
+                                activeBillId={activeBillId}
                             />
                         </div>
                     </div>

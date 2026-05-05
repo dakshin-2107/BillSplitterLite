@@ -10,6 +10,16 @@ func TallyResponse(tally Tally) gin.H {
 	}
 }
 
+// BillTallyResponse sends only the recomputed bill shares for a partial tally update.
+// The frontend merges these into its cached tally.
+func BillTallyResponse(billShares map[int]BillShare) gin.H {
+	return gin.H{
+		"success":    true,
+		"message":    "Bill tally has been calculated",
+		"billShares": billShares,
+	}
+}
+
 func SplitResponse(split Split) gin.H {
 	return gin.H{
 		"success": true,
@@ -89,6 +99,6 @@ func SessionUriResponse(splitID string) gin.H {
 	return gin.H{
 		"success":   true,
 		"message":   "Session URI generated",
-		"sessionId": splitID,
+		"splitId": splitID,
 	}
 }

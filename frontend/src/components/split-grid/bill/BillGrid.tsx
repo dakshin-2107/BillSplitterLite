@@ -24,8 +24,8 @@ export const BillGrid: React.FC<BillGridProps> = ({
                     <table className="split-table">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Actions</th>
-                                <th>Number</th>
                                 <th>Item Name</th>
                                 <th>Price</th>
                                 <th>Takers</th>
@@ -40,13 +40,13 @@ export const BillGrid: React.FC<BillGridProps> = ({
                                         <React.Fragment key={billId}>
                                             {Object.values(bill.items).map((item, itemIndex) => (
                                                 <tr key={`${billId}-${item.id || itemIndex}`}>
+                                                    <td>{itemIndex + 1}</td>
                                                     <td>
                                                         <ItemActionCell
                                                             item={item}
                                                             billId={billId}
                                                         />
                                                     </td>
-                                                    <td>{itemIndex + 1}</td>
                                                     <td>{item.name}</td>
                                                     <td>{item.price.toFixed(2)}</td>
                                                     <td className="takers-cell">
