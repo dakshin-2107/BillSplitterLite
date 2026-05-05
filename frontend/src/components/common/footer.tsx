@@ -1,10 +1,15 @@
-import React from 'react';
 import './footer.css';
 
-const Footer: React.FC = () => {
+const Footer = () => {
+    const aboutUri = import.meta.env.VITE_ABOUT_ME_URI as string | undefined;
+
     return (
         <footer className="app-footer">
-            <a href="#" className="footer-link">About me</a>
+            {aboutUri && (
+                <a href={aboutUri} className="footer-link" target="_blank" rel="noreferrer">
+                    About me
+                </a>
+            )}
         </footer>
     );
 };

@@ -1,0 +1,39 @@
+name: Dev Deploy
+
+on:
+  workflow_dispatch:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    environment: prod
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      BASE_URL: ${{ vars.BASE_URL }}
+      ALLOW_DEBUG_LOGS: ${{ vars.ALLOW_DEBUG_LOGS }}
+      ALLOW_INFO_LOGS: ${{ vars.ALLOW_INFO_LOGS }}
+      ALLOW_PANIC_LOGS: ${{ vars.ALLOW_PANIC_LOGS }}
+      EXPOSE_EXAMPLE_ENDPOINT: ${{ vars.EXPOSE_EXAMPLE_ENDPOINT }}
+      AI_PROMPT: ${{ vars.AI_PROMPT }}
+      BACKEND_PORT: ${{ vars.BACKEND_PORT }}
+      FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
+      REDIS_PORT: ${{ vars.REDIS_PORT }}
+      VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
+      VITE_WS_BASE_URL: ${{ vars.VITE_WS_BASE_URL }}
+      VITE_SITE_TITLE: ${{ vars.VITE_SITE_TITLE }}
+      VITE_ABOUT_ME_URI: ${{ vars.VITE_ABOUT_ME_URI }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Tear down
+        run: docker compose down --remove-orphans
+
+      - name: Deploy
+        run: docker compose up --build -d

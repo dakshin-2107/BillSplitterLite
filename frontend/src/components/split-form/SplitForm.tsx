@@ -27,12 +27,12 @@ const SplitForm = ({ onSubmitSuccess, onSubmitError }: SplitFormProps) => {
         try {
             const formData = new FormData();
             bills.forEach(bill => {
-                formData.append(import.meta.env.VITE_FORM_IMAGES, bill.image);
-                formData.append(import.meta.env.VITE_FORM_DATES, bill.date);
-                formData.append(import.meta.env.VITE_FORM_LOCATIONS, bill.location);
+                formData.append('images', bill.image);
+                formData.append('dates', bill.date);
+                formData.append('locations', bill.location);
             });
             people.forEach(person => {
-                formData.append(import.meta.env.VITE_FORM_PEOPLE, person);
+                formData.append('people', person);
             });
 
             const res = await fetch(URLProvider.getHomeUrl(), {
