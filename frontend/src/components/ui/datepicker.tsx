@@ -9,7 +9,6 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { format, parse } from "date-fns"
-import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DatePickerProps {
