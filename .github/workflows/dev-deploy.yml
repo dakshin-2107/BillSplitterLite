@@ -18,6 +18,7 @@ jobs:
       ALLOW_PANIC_LOGS: ${{ vars.ALLOW_PANIC_LOGS }}
       EXPOSE_EXAMPLE_ENDPOINT: ${{ vars.EXPOSE_EXAMPLE_ENDPOINT }}
       AI_PROMPT: ${{ vars.AI_PROMPT }}
+      ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
       BACKEND_PORT: ${{ vars.BACKEND_PORT }}
       FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
       REDIS_PORT: ${{ vars.REDIS_PORT }}
