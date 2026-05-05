@@ -35,7 +35,7 @@ RUN printf 'server {\n\
     listen 80;\n\
     root /usr/share/nginx/html;\n\
     index index.html;\n\
-    add_header Content-Security-Policy "default-src '"'"'self'"'"'; connect-src '"'"'self'"'"' %s %s; style-src '"'"'self'"'"' '"'"'unsafe-inline'"'"' https://fonts.googleapis.com; font-src '"'"'self'"'"' https://fonts.gstatic.com; script-src '"'"'self'"'"'; img-src '"'"'self'"'"' data: blob:;";\n\
+    add_header Content-Security-Policy "default-src '"'"'none'"'"'; script-src '"'"'self'"'"'; style-src '"'"'self'"'"' '"'"'unsafe-inline'"'"' https://fonts.googleapis.com; font-src '"'"'self'"'"' https://fonts.gstatic.com; connect-src '"'"'self'"'"' %s %s; img-src '"'"'self'"'"' data: blob:; base-uri '"'"'self'"'"'; form-action '"'"'self'"'"'; frame-ancestors '"'"'none'"'"';";\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
