@@ -35,6 +35,7 @@ services:
       ALLOW_PANIC_LOGS: "${ALLOW_PANIC_LOGS:-true}"
       EXPOSE_EXAMPLE_ENDPOINT: "${EXPOSE_EXAMPLE_ENDPOINT:-false}"
       AI_PROMPT: "${AI_PROMPT:-}"
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-}"
     depends_on:
       redis:
         condition: service_healthy

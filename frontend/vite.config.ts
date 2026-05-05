@@ -6,6 +6,9 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    modulePreload: { polyfill: false }
+  },
   server: {
     allowedHosts: ["splitzy.dak-shin.com"]
   },

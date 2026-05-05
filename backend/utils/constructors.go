@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"slices"
+	"strings"
 
 	"github.com/dakshin-2107/BillSplitterLite/backend/common"
 	"github.com/dakshin-2107/BillSplitterLite/backend/controllers/managers"
@@ -17,12 +19,19 @@ import (
 	"go.uber.org/fx"
 )
 
-var allowedOrigins = []string{
-	"http://localhost:5173",
-	"http://localhost:5174",
-	"http://192.168.0.169:5173",
-	"http://192.168.0.169:5174",
-	"https://splitzy.dak-shin.com",
+func getAllowedOrigins() []string {
+	raw := os.Getenv("ALLOWED_ORIGINS")
+	if raw == "" {
+		return []string{}
+	}
+	parts := strings.Split(raw, ",")
+	origins := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if trimmed := strings.TrimSpace(p); trimmed != "" {
+			origins = append(origins, trimmed)
+		}
+	}
+	return origins
 }
 
 func CreateGinEngine(logger logger.ILogger) *gin.Engine {
@@ -30,7 +39,7 @@ func CreateGinEngine(logger logger.ILogger) *gin.Engine {
 	r := gin.New()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
+		AllowOrigins:     getAllowedOrigins(),
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -95,13 +104,7 @@ func NewConnUpgrader() *websocket.Upgrader {
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			origin := r.Header.Get("Origin")
-			for _, allowed := range allowedOrigins {
-				if origin == allowed {
-					return true
-				}
-			}
-			return false
+			return slices.Contains(getAllowedOrigins(), r.Header.Get("Origin"))
 		},
 	}
 }
