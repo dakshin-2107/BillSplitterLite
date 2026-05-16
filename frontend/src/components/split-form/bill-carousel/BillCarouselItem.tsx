@@ -21,18 +21,18 @@ const BillCarouselItem = ({ bill, onDelete }: BillCarouselItemProps) => {
 
     return (
         <CarouselItem className='carousel-item'>
-            {imageUrl
-                ? <img src={imageUrl} alt="Bill" className="bill-item-image" />
-                : <span className="bill-item-placeholder">bill image</span>
-            }
+            <div className="bill-item-thumbnail">
+                {imageUrl
+                    ? <img src={imageUrl} alt="Bill" className="bill-item-image" />
+                    : <span className="bill-item-placeholder">?</span>
+                }
+            </div>
             <div className="bill-item-info">
-                <div>
-                    <p className="bill-location">{bill.location}</p>
-                    <p className="bill-date">{bill.date}</p>
-                </div>
-                <div className="bill-item-actions">
-                    <Button type="button" variant="destructive" size="lg" onClick={onDelete}>Delete</Button>
-                </div>
+                <p className="bill-location">{bill.location}</p>
+                <p className="bill-date">{bill.date}</p>
+                <Button type="button" variant="destructive" size="sm" onClick={onDelete} className="bill-delete-btn">
+                    Remove
+                </Button>
             </div>
         </CarouselItem>
     );

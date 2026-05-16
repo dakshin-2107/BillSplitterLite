@@ -8,7 +8,7 @@ const inputVariants = cva(
     variants: {
       variant: {
         default: `flex w-full h-input rounded-input border border-input-border-color 
-        bg-input-background px-4 py-2 text-base text-white file:border-0 file:bg-transparent 
+        bg-input-background px-4 py-2 text-base text-foreground file:border-0 file:bg-transparent 
         file:text-sm file:font-medium placeholder:text-zinc-500 outline-none transition-all 
         focus:border-purple-400`,
         destructive:

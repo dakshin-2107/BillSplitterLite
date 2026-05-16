@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BillFormData, ApiResponse, SplitData } from '@utils/interfaces';
 import BillCarousel from '@split-form/bill-carousel/BillCarousel';
 import BillForm from '@split-form/bill-form/BillForm';
@@ -7,6 +7,37 @@ import { Button } from '@ui/button';
 import { Spinner } from '@ui/spinner';
 import { URLProvider } from '@utils/urlProvider';
 import './SplitForm.css';
+
+const STORAGE_BILLS = 'splitzy_bills';
+const STORAGE_PEOPLE = 'splitzy_people';
+
+interface StoredBill {
+    location: string;
+    date: string;
+    imageDataUrl: string;
+    imageName: string;
+    imageType: string;
+}
+
+const billToStored = (bill: BillFormData): Promise<StoredBill> =>
+    new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({
+            location: bill.location,
+            date: bill.date,
+            imageDataUrl: e.target!.result as string,
+            imageName: bill.image.name,
+            imageType: bill.image.type,
+        });
+        reader.readAsDataURL(bill.image);
+    });
+
+const storedToBill = async (stored: StoredBill): Promise<BillFormData> => {
+    const res = await fetch(stored.imageDataUrl);
+    const blob = await res.blob();
+    const image = new File([blob], stored.imageName, { type: stored.imageType });
+    return { location: stored.location, date: stored.date, image };
+};
 
 interface SplitFormProps {
     onSubmitSuccess: (data: SplitData) => void;
@@ -17,6 +48,27 @@ const SplitForm = ({ onSubmitSuccess, onSubmitError }: SplitFormProps) => {
     const [bills, setBills] = useState<BillFormData[]>([]);
     const [people, setPeople] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        const storedPeople = sessionStorage.getItem(STORAGE_PEOPLE);
+        if (storedPeople) setPeople(JSON.parse(storedPeople));
+
+        const storedBills = sessionStorage.getItem(STORAGE_BILLS);
+        if (storedBills) {
+            const parsed: StoredBill[] = JSON.parse(storedBills);
+            Promise.all(parsed.map(storedToBill)).then(setBills);
+        }
+    }, []);
+
+    useEffect(() => {
+        sessionStorage.setItem(STORAGE_PEOPLE, JSON.stringify(people));
+    }, [people]);
+
+    useEffect(() => {
+        Promise.all(bills.map(billToStored)).then(stored => {
+            sessionStorage.setItem(STORAGE_BILLS, JSON.stringify(stored));
+        });
+    }, [bills]);
 
     const handleBillAdded = (bill: BillFormData) => {
         setBills(prev => [...prev, bill]);
@@ -57,6 +109,8 @@ const SplitForm = ({ onSubmitSuccess, onSubmitError }: SplitFormProps) => {
     const handleResetAll = () => {
         setBills([]);
         setPeople([]);
+        sessionStorage.removeItem(STORAGE_BILLS);
+        sessionStorage.removeItem(STORAGE_PEOPLE);
     };
 
     return (

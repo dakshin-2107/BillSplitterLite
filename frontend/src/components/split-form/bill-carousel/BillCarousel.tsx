@@ -15,9 +15,18 @@ const BillCarousel = ({ bills, setBills }: BillCarouselProps) => {
 
     return (
         <div className='bill-carousel-container'>
+            <div className="bill-carousel-header">
+                <div>
+                    <span className="step-label">Step 3</span>
+                    <h2 className="bill-carousel-label">
+                        Review your bills and start the session
+                        {bills.length > 0 && ` · ${bills.length} bill${bills.length !== 1 ? 's' : ''} added`}
+                    </h2>
+                </div>
+            </div>
             <Carousel className='bill-carousel-wrapper'>
                 <CarouselPrevious className='left-2 bg-input-background' />
-                <CarouselContent>
+                <CarouselContent className='bill-carousel-content'>
                     {bills.length > 0 ? (
                         bills.map((bill, index) => (
                             <BillCarouselItem
@@ -27,7 +36,7 @@ const BillCarousel = ({ bills, setBills }: BillCarouselProps) => {
                             />
                         ))
                     ) : (
-                        <p className="bill-carousel__empty">No bills added yet...</p>
+                        <p className="bill-carousel__empty">No bills added yet. Add one below.</p>
                     )}
                 </CarouselContent>
                 <CarouselNext className='right-2 bg-input-background' />
